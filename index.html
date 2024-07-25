@@ -82,7 +82,7 @@
 
 // Global parameters (might need to change)
   const staircase_on = false; // Turn on/off staircasing 
-  const ratings_on = false; // Turn on/off confidence ratings 
+  const ratings_on = true; // Turn on/off confidence ratings 
   const random_diff = false; // If true and the staircase is off then a spread of dots between 1 and 70 will be used
   
   var no_trials = 36; // number of trials in each block
@@ -321,7 +321,6 @@ var conf_instruc = {
 }
 
 
-
 /////////////// **********  DOT TRIAL  ***************************** ///////////////
 
 
@@ -340,7 +339,7 @@ var dot_trial = {
       {type: jsPsychFullscreen,
       message: '<p>You need to be in fullscreen mode to continue the experiment! <br></br> Please click the button below to enter fullscreen mode.<br></br><p>',
       fullscreen_mode: true,
-      on_finish(){
+      on_finish: function(){
         in_fullscreen = true;
       }
     }
@@ -383,6 +382,7 @@ var dot_trial = {
   },
 
 
+
 // Presentation
   {
     type: jsPsychCanvasKeyboardResponse,
@@ -406,7 +406,7 @@ var dot_trial = {
           }
 
           // Fix difficulty at the starting value
-      if(random_diff == false){
+          if(random_diff == false){
             drawStim(c, Math.round(dots_diff), jsPsych.timelineVariable('target_left')) 
 
           }
@@ -418,18 +418,17 @@ var dot_trial = {
       },
       choices: "NO_KEYS",
       on_finish: function(data){
-        console.log(dots_diff)
         data.trial_type = "Stimulus Presentation";
         data.stimdevi = dots_diff;
       }
     },
 
 
+
 // Response
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [788, 790],
-      trial_duration: 1000,
       stimulus: function(c){
         drawBlank(c, "black", "black")
       },
@@ -459,6 +458,32 @@ var dot_trial = {
 
 
 
+// Response Highlight
+  {
+    timeline:[{
+      type: jsPsychCanvasKeyboardResponse,
+      trial_duration: 500,
+      canvas_size: [788, 790],
+      stimulus: function(c){
+
+        var last_trial_response = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].response;
+        if(last_trial_response == "e") return drawBlank(c, "transparent", "blue")
+          if(last_trial_response == "w") return drawBlank(c, "blue", "transparent")
+        },
+      choices: "NO_KEYS",
+      on_finish: function(data){
+        data.trial_type = "Response Highlight";
+
+      }
+    }],
+    conditional_function: function(){
+      if(provide_feedback === true){
+        return false;
+      } else {
+        return true;
+      }
+    }
+  },
 
 
 // Confidence Rating
@@ -565,7 +590,6 @@ var dot_trial = {
 
     },
     on_finish: function(data){
-
       data.rt = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].rt;
       data.phase = phase;
       data.response = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].response;
@@ -578,8 +602,7 @@ var dot_trial = {
         data.feedback = "True";
       }
       if(staircase_on == true) data.stimdevi = Math.round(Math.exp(jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last().values()[0].stimdevi));
-      if(staircase_on == false) data.stimdevi = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last().values()[0].stimdevi[0];
-
+      if(staircase_on == false) data.stimdevi = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last().values()[0].stimdevi;
       data.trial_type = "Summary Trial"
       trialnum++;
 
@@ -595,6 +618,9 @@ timeline_variables: [
   ],
 randomize_order: true
 };
+
+
+
 
 
 
@@ -696,7 +722,7 @@ if(typeof SONAID != 'undefined'){
 
 // Create Experiment
 
-  condition_1_timeline = [ test_block, browser_check, enter_fullscreen, participant_info_paid, participant_info_SONA, demographics, instructions, practice_block, practice_end, conf_instruc, test_start, test_block, new_block, test_block, new_block, test_block, debug, save_data, DEBRIEF_SONA];
+  condition_1_timeline = [ browser_check, enter_fullscreen, participant_info_paid, participant_info_SONA, demographics, instructions, practice_block, practice_end, conf_instruc, test_start, test_block, new_block, test_block, new_block, test_block, debug, save_data, DEBRIEF_SONA];
 
   async function createExperiment(){
     const condition = await jsPsychPipe.getCondition(DataPipe_ID);
