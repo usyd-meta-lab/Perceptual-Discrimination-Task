@@ -4,747 +4,778 @@
   <title>USYD Metacognition</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-  <!-- Load jsPsych and jquery-->
+  <!-- Load jsPsych and dependencies -->
   <script src="https://unpkg.com/jspsych@7.3.3"></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/js/foundation.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/js/foundation.min.js"></script>
   <link href="https://unpkg.com/jspsych@7.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
   <link href="https://unpkg.com/jquery-ui-css@1.11.5/jquery-ui.css" rel="stylesheet" type="text/css" />
 
-
-
-
-  <!-- Load jsPsych plugins-->
+  <!-- Load jsPsych plugins -->
   <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.3"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-external-html@1.0.0"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-external-html@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-preload@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-slider-response@1.1.2"></script>
   <script src="https://unpkg.com/@jspsych/plugin-browser-check@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-canvas-keyboard-response@1.1.2"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-call-function"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-call-function@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.2.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@1.0.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-survey-likert@1.1.2"></script>
   <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
 
-  <!-- Load the global environment-->
-  <script src="global-env.js"></script>
-  <script src="info_sheets.js"></script>
-  
-
-  <!-- Load custom plugins from directory-->
-  <script src="staircase.js"></script>
+  <!-- Load the global environment and additional scripts -->
+  <script src="https://usyd-meta-lab.github.io/files/info_sheets.js"></script>
   <script src="dot-difference-functions.js"></script>
 
 
-
-  <!-- Some custom CSS-->
+  <!-- Custom CSS -->
   <link href="custom-css.css" rel="stylesheet" type="text/css" />
 
-
-
-
   <style> 
-  body {background-color: #A3A3A3;}
+    body {
+      background-color: #A3A3A3;
+    }
   </style>
-
-
 </head>
+
 <body></body>
+
 <script>
 
 
 
-//////////////////////////////////
-//         Gloabl Settings      //
-//////////////////////////////////
 
-// Initalise jsPsych
-  const jsPsych = initJsPsych({
-   on_interaction_data_update: function(data) {
-     if(data.event == 'fullscreenexit' & pilot != 'true'){in_fullscreen = false}
+/* 
+  ===============================================================
+  =              GLOBAL SETTINGS & INITIALIZATION               =
+  ===============================================================
+*/
 
-   },
- on_finish: function(data) {
-   if(aborted == true){alert("You must use Chrome or Firefox to complete this experiment.")}
-     if(aborted == false) {  if(jsPsych.data.get().filter({trial_type: "Summary Trial"}).select('correct').mean() < 0.55){window.location = attention_redirect_link} else {window.location = redirect_link}}
-    //jsPsych.data.get().localSave('csv','mydata.csv');
-   }
-})
-
-
-// Settings (set these)
-
-  const DataPipe_ID = "vUyxuIvNMDjb" // The DataPipe ID for where the data should be stored
-
-  const sona_experiment_id = "NA"; // The SONA experiment ID 
-  const sona_credit_token = "NA"; // The SONA credit token 
-  const Prolific_redirect = "CHGWKNI0"; // The Prolific redirect link (to credit)
-  const Prolific_failed_check = "C13PIUOF"; // The Prolific redirect link to NOT credit (manual review)
-  const task_time = 30; // time in minutes for the PIS 
-
-
-// Global parameters (might need to change)
-  const staircase_on = true; // Turn on/off staircasing 
-  const ratings_on = true; // Turn on/off confidence ratings 
-  const random_diff = false; // If true and the staircase is off then a spread of dots between 1 and 70 will be used
-  
-  var no_trials = 42; // number of trials in each block
-  var no_practice_trials = 25; // number of trials in the practice block
-  var total_blocks = 5; //note only updates instructions
-  dots_diff = 4.25 // If staircase is on, then this is the log space starting difficulty. In log space, 4.25 is about 70 dots shown for the first trial. If staircase is off, then this is the fixed dot difference (not log space) for all trials when random_diff is false. If staircase is off and random_diff is true then this does nothing
-
-
-  var in_fullscreen = true;
-  var trialnum = 1;
-  var blocknum = 1;
-  aborted = false;
-  phase = null;
-
-  jsPsych.data.addProperties({staircase_on: staircase_on});
-  jsPsych.data.addProperties({ratings_on: ratings_on});
-
-
-//////////////////////////////////
-
-
-
-
-  // Browser Check
-
-
-  var browser_check = {
-    timeline: [
-    {  
-    type: jsPsychBrowserCheck,
-    inclusion_function: (data) => {
-      return ['chrome', 'firefox'].includes(data.browser) && data.mobile === false;
-    },
-    exclusion_message: (data) => {
-      aborted = true;
-          if(data.mobile){
-      return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
-    } else if(data.browser !== 'chrome'){
-      return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>'
+// Initialize jsPsych
+const jsPsych = initJsPsych({
+  on_interaction_data_update: function(data) {
+    // If participant exits fullscreen, note it (unless it's a pilot).
+    if (data.event === 'fullscreenexit' && pilot !== 'true') {
+      in_fullscreen = false;
     }
-    },
-  }
-  ],
-  conditional_function: function(){
-      if(pilot === 'true'){
-        return false;
-      } else {
-        return true;
-      }
-    }}
-
-
-
-// Enter Fullscreen
-
-  var enter_fullscreen = {
-    timeline: [
-    {type: jsPsychFullscreen,
-    message: '<p>To take part in the experiment, your browser must be in fullscreen mode. Exiting fullscreen mode will pause the experiment. <br></br>Please click the button below to enable fullscreen mode and continue.</p>',
-    fullscreen_mode: true,
-    on_finish: function(){
-      in_fullscreen = true;
-    }
-  }
-  ],
-    conditional_function: function(){
-      if(pilot === 'true'){
-        return false;
-      } else {
-        return true;
-      }
-    }
-  }
-
-
-
-
-// Instructions
-
-  var new_block = {
-    type: jsPsychInstructions,
-    on_finish: function(){
-      blocknum++;
-    },
-    pages: function(){
-      return [
-        '<p class="instructions">You can now pause for a break. You have completed ' + blocknum + ' out of '+total_blocks+' blocks.<br><br>As a reminder:<br>If the box on the <strong>left</strong> had more dots, press <strong>W</strong>.<br>If the box on the <strong>right</strong> had more dots, press <strong>E</strong>.</p>' 
-
-        ]
-    },
-    show_clickable_nav: true
-  }
-
-
-
-
-
-  var instructions = {
-    type: jsPsychInstructions,
-    pages: function(){
-      if(ratings_on == true) return [
-        '<p class="instructions">Welcome to the task!</p>' +
-        '<p class="instructions">In this task, we will ask you to judge which of two images contains more dots, before asking you to rate your confidence in your judgement.</p>' +
-        '<p class="instructions">At the beginning of each trial, you will be presented with a black cross in the middle of the screen. Focus your attention on it. Then, two black boxes with a number of white dots will be flashed and you will be asked to judge which box had a higher number of dots.</p>' +
-        '<p class="instructions">If the box on the <strong>left</strong> had more dots, <strong>press W</strong>.<br> If the box on the <strong>right</strong> had more dots, <strong> press E</strong>.</p>' +
-        '<p class="instructions">Please respond quickly and to the best of your ability.</p>' +
-        '<p class="instructions">You will then rate your confidence in your judgement on a scale with the mouse.</p>' +
-        '<p class="instructions">Please do your best to rate your confidence accurately and do take advantage of the whole rating scale.</p>',
-        '<p class="instructions">We will now ask you to carry out some practice trials. Please respond only when the dots have disappeared.</p>' +  
-        '<p class="instructions">In this practice phase we will tell you whether your judgements are right or wrong. <br></br>If you are <strong>correct</strong>, the box that you selected will be outlined in <font color="green"><strong>green</strong></font>. <br>If you are <strong>incorrect</strong>, the box that you selected will be outlined in <font color="red"><strong>red</strong></font>.</p>' +
-        '<p class="instructions">You will not need to rate your confidence of your judgements on these trials.</p>' 
-
-        ]
-       if(ratings_on == false) return [
-        '<p class="instructions">Welcome to the task!</p>' +
-        '<p class="instructions">In this task, we will ask you to judge which of two images contains more dots.</p>' +
-        '<p class="instructions">At the beginning of each trial, you will be presented with a black cross in the middle of the screen. Focus your attention on it. Then, two black boxes with a number of white dots will be flashed and you will be asked to judge which box had a higher number of dots.</p>' +
-        '<p class="instructions">If the box on the <strong>left</strong> had more dots, <strong>press W</strong>.<br> If the box on the <strong>right</strong> had more dots, <strong> press E</strong>.</p>' +
-        '<p class="instructions">Please respond quickly and to the best of your ability.</p>',
-        '<p class="instructions">We will now ask you to carry out some practice trials. Please respond only when the dots have disappeared.</p>' +  
-        '<p class="instructions">In this practice phase we will tell you whether your judgements are right or wrong. <br></br>If you are <strong>correct</strong>, the box that you selected will be outlined in <font color="green"><strong>green</strong></font>. <br>If you are <strong>incorrect</strong>, the box that you selected will be outlined in <font color="red"><strong>red</strong></font>.</p>' 
-
-        ]
-     },
-     show_clickable_nav: true
-   }
-
-
-
-   var practice_end = {
-    type: jsPsychInstructions,
-
-    pages:  function(){
-     if(ratings_on == true) return  [
-      '<p class="instructions">In the task proper, you will not be provided accuracy feedback on your judgements, but the box you selected will be outlined in <font color="blue"><strong>blue</strong></font>.</p>' +
-      '<p class="instructions">You will be asked to rate your confidence in your judgement on a rating scale after each trial, which will be explained next.</p>' 
-
-      ]
-
-      if(ratings_on == false) return  [
-        '<p class="instructions">In the task proper, you will not be provided accuracy feedback on your judgements, but the box you selected will be outlined in <font color="blue"><strong>blue</strong></font>.</p>' 
-
-        ]
-    },
-  show_clickable_nav: true
-}
-
-
-
-var test_start = {
-  type: jsPsychInstructions,
-
-  pages:  function(){
-   if(ratings_on == true) return  [
-    '<p class="instructions">The task proper is divided into '+total_blocks+' blocks of '+no_trials+' trials, where you can pause for a break before every block.</p>' +
-    '<p class="instructions">There are no time limits on your responses to the dots or on your confidence ratings.</p>' +
-      //'<p class="instructions">You can receive up to 2 pounds bonus if your performance is satisfactory.</p>' +
-    '<p class="instructions">As a reminder: <br>If the box on the <strong>left</strong> had more dots, press <strong>W</strong>.<br> If the box on the <strong>right</strong> had more dots, press <strong>E</strong>.</p>' 
-
-    ]
-
-    if(ratings_on == false) return  [
-      '<p class="instructions">The task proper is divided into '+total_blocks+' blocks of '+no_trials+' trials, where you can pause for a break before every block.</p>' +
-      '<p class="instructions">There are no time limits on your responses to the dots.</p>' +
-      //'<p class="instructions">You can receive up to 2 pounds bonus if your performance is satisfactory.</p>' +
-      '<p class="instructions">As a reminder: <br>If the box on the <strong>left</strong> had more dots, press <strong>W</strong>.<br> If the box on the <strong>right</strong> had more dots, press <strong>E</strong>.</p>' 
-
-      ]
   },
-show_clickable_nav: true
-}
+  on_finish: function(data) {
+    // If user is forced to abort (wrong browser or device), show alert
+    if (aborted === true) {
+      alert("You must use Chrome or Firefox to complete this experiment.");
+    }
 
-
-
-
-
-
-var conf_instruc = {
-  timeline: [
-  {
-    type: jsPsychHtmlSliderResponse,
-    css_classes: ["conf_instructions"],
-    stimulus: function(){
-
-      var header = jsPsych.timelineVariable('header')
-      return '<div id = "header" style = "position: relative;">' +header + "</div><br><br>" +
-      '<div id = "Iconf1" class = "conf_ins" style = "height: 25px; width: 154px; margin-top: 2px; margin-left: 15px;"></div>' +
-      '<div id = "Iconf2" class = "conf_ins" style = "height: 25px; width: 154px; margin-top: 2px; margin-left: 169px;"></div>' +
-      '<div id = "Iconf3" class = "conf_ins" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 323px;"></div>' +
-      '<div id = "Iconf4" class = "conf_ins" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 477px;"></div>' +
-      '<div id = "Iconf5" class = "conf_ins" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 631px;"></div>'
-    },
-    on_load: function(){
-
-      var w = window.innerWidth;
-      var marLeft = (w-800)/2;
-      document.getElementById("Iconf1").style.left = marLeft + "px";
-      document.getElementById("Iconf2").style.left = marLeft  + "px";
-      document.getElementById("Iconf3").style.left = marLeft  + "px";
-      document.getElementById("Iconf4").style.left = marLeft  + "px";
-      document.getElementById("Iconf5").style.left = marLeft  + "px";
-
-      var elementx = document.getElementById("jspsych-html-slider-response-response");
-      elementx.disabled = jsPsych.timelineVariable('disable');
-
-
-    },
-    min: 1,
-    max: 6,
-    step: 1,
-    slider_start: jsPsych.timelineVariable('start'),
-    slider_width: 800,
-    labels: ['Guessing', "", "", "", "", "Certain"],
-    button_label: "Submit",
-    require_movement: jsPsych.timelineVariable('require')
+    // If not aborted, check average accuracy from summary trials
+    if (aborted === false) {
+      const meanCorrect = jsPsych.data.get().filter({trial_type: "Summary Trial"}).select('correct').mean();
+      if (meanCorrect < 0.55) {
+        // Failed check
+        window.location = attention_redirect_link;
+      } else {
+        // Passed check
+        window.location = redirect_link;
+      }
+    }
   }
+});
 
+/**
+ * These variables can be modified as needed:
+ * - DataPipe_ID:         The DataPipe ID to which the data will be saved.
+ * - SONA/prolific info:  Used for setting up redirect links.
+ * - Task parameters:     Number of trials, blocks, enabling staircase or confidence ratings, etc.
+ */
+const DataPipe_ID = "vUyxuIvNMDjb";  // The DataPipe ID for where the data should be stored
+const sona_experiment_id = "NA";      // The SONA experiment ID 
+const sona_credit_token = "NA";       // The SONA credit token 
+const Prolific_redirect = "CHGWKNI0"; // The Prolific redirect link (to credit)
+const Prolific_failed_check = "C13PIUOF"; // The Prolific redirect link for failing an attention check
+const task_time = 30; // (minutes) for the PIS
+
+// Global toggles
+let staircase_on = true;    // Whether to use adaptive staircasing
+let ratings_on = true;      // Whether to ask for confidence ratings
+let random_diff = false;    // If true and staircase is off, uses random dot differences from 1..70
+let no_trials = 42;         // Number of trials in each main block
+let no_practice_trials = 25;// Number of practice trials
+let total_blocks = 5;       // Total number of blocks (only used for instructions)
+let dots_diff = 4.25;       // Starting difficulty (log-space if staircase_on=true)
+let in_fullscreen = true;   // Tracks whether participant is in fullscreen
+let provide_feedback;       // Tracks feedback mode (true during practice, false in test blocks)
+let trialnum = 1;           // Trial counter
+let blocknum = 1;           // Block counter
+let aborted = false;        // Whether user was aborted from experiment
+let phase = null;           // Tracks current phase: "Practice" or "Test"
+
+// Store which features are being used in the data
+jsPsych.data.addProperties({ staircase_on: staircase_on });
+jsPsych.data.addProperties({ ratings_on: ratings_on });
+
+/* 
+  ===============================================================
+  =                 BROWSER & FULLSCREEN CHECKS                 =
+  ===============================================================
+*/
+
+// Check that participant is using Chrome or Firefox on a desktop
+const browser_check = {
+  timeline: [
+    {
+      type: jsPsychBrowserCheck,
+      inclusion_function: (data) => {
+        // Accept only if browser is Chrome or Firefox and not on mobile
+        return ['chrome', 'firefox'].includes(data.browser) && data.mobile === false;
+      },
+      exclusion_message: (data) => {
+        aborted = true;
+        if (data.mobile) {
+          return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
+        } else if (!['chrome','firefox'].includes(data.browser)) {
+          return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>';
+        }
+      }
+    }
   ],
-  timeline_variables: [
-    {start: 3, require: true, disable: false, header: 'A rating scale as shown below is used throughout the task. You will be able to rate your confidence of your judgements by choosing any point along the rating scale with your mouse. <br></br>Choose any point on the rating scale and click &apos;Submit&apos; to continue.'},
-    {start: 6, require: false, disable: true, header: 'During the task, if you are <strong>very sure</strong> that you made the correct judgement, you should respond <strong>&apos;Certain&apos;</strong>'},
-    {start: 1, require: false, disable: true, header: '<p class="instructions">If you are <strong>very unsure</strong> you made the correct judgement, you should respond <strong>&apos;Guessing&apos;</strong></p>'},
-    {start: 4, require: true, disable: false, header: '<p class="instructions">If you are <strong>somewhat sure</strong> about being correct, you should select a rating between the two descriptions.</p>' +
-    '<p class="instructions">If you understand how to use and take advantage of the whole rating scale, choose any point on the rating scale and click &apos;Submit&apos; to continue.</p>'}
-
-    ],
-  conditional_function: function(){
-   if(ratings_on === true){
+  conditional_function: function() {
+    // Skip this check if pilot mode
+    if (pilot === 'true') {
+      return false;
+    } 
     return true;
-  } else {
-    return false;
   }
-}
+};
 
-
-}
-
-
-/////////////// **********  DOT TRIAL  ***************************** ///////////////
-
-
-
-
-var dot_trial = {
-  data: function(){
-    return {trialnum: trialnum, blocknum: blocknum}
-  },
+// Request participant enter fullscreen
+const enter_fullscreen = {
   timeline: [
-
-// Check Fullscreen
-  {
-    timeline: [
-
-      {type: jsPsychFullscreen,
-      message: '<p>You need to be in fullscreen mode to continue the experiment! <br></br> Please click the button below to enter fullscreen mode.<br></br><p>',
+    {
+      type: jsPsychFullscreen,
+      message: '<p>To take part in the experiment, your browser must be in fullscreen mode. Exiting fullscreen mode will pause the experiment.<br><br>Please click the button below to enable fullscreen and continue.</p>',
       fullscreen_mode: true,
       on_finish: function(){
         in_fullscreen = true;
       }
     }
-    ],
-    conditional_function: function(){
-      if(in_fullscreen === true){
-        return false;
-      } else {
-        return true;
-      }
+  ],
+  conditional_function: function() {
+    // Skip if pilot
+    if (pilot === 'true') {
+      return false;
+    } 
+    return true;
+  }
+};
+
+/* 
+  ===============================================================
+  =                        INSTRUCTIONS                          =
+  ===============================================================
+*/
+
+/**
+ * Instructions displayed before practice trials begin.
+ * Will depend on whether confidence ratings are turned on or off.
+ */
+const instructions = {
+  type: jsPsychInstructions,
+  pages: function() {
+    if (ratings_on) {
+      return [
+        `<p class="instructions">Welcome to the task!</p>
+         <p class="instructions">In this task, you will judge which of two images contains more dots, then rate your confidence in your judgment.</p>
+         <p class="instructions">A black cross will appear first; focus on it. Two boxes with a certain number of white dots will flash. Then, choose which box had more dots.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>
+         <p class="instructions">You will then rate your confidence in that judgment using a scale.</p>
+         <p class="instructions">Use the entire scale from &apos;Guessing&apos; to &apos;Certain.&apos;</p>`,
+
+        `<p class="instructions">Let’s do some practice trials. Respond only after the dots have disappeared.</p>
+         <p class="instructions">During practice, you will see feedback (green or red outline) indicating correct or incorrect judgments.</p>
+         <p class="instructions">No confidence rating is needed during these practice trials.</p>`
+      ];
+    } else {
+      return [
+        `<p class="instructions">Welcome to the task!</p>
+         <p class="instructions">In this task, you will judge which of two images contains more dots.</p>
+         <p class="instructions">A black cross will appear first; focus on it. Two boxes with a certain number of white dots will flash. Then, choose which box had more dots.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>
+         <p class="instructions">Respond quickly and accurately.</p>`,
+
+        `<p class="instructions">Let’s do some practice trials. Respond only after the dots have disappeared.</p>
+         <p class="instructions">During practice, you will see feedback (green or red outline) indicating whether you were correct or incorrect.</p>`
+      ];
     }
   },
+  show_clickable_nav: true
+};
 
-// Fixation
-  {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: '<p id = "fixation" style = "position: absolute; font-size: 70px">+</p>',
-    on_load: function(){
-
-        // Set X position
-      var w = window.innerWidth;
-      var element = document.getElementById('fixation');
-      var positionInfo = element.getBoundingClientRect();
-      var width = positionInfo.width;
-
-      element.style.left = (w-width)/2+'px';
-
-        // Set Y position
-      var h = window.innerHeight;
-      var x = ((h-795)/2) + 35;
-
-
-      element.style.top = x +'px';
-    },
-    choices: 'NO_KEYS',
-    trial_duration: 1000,
-    on_finish: function(data){
-      data.trial_type = "Fixation";
+/**
+ * Instructions after practice finishes (explaining that no feedback will be given in the real task).
+ */
+const practice_end = {
+  type: jsPsychInstructions,
+  pages: function() {
+    if (ratings_on) {
+      return [
+        `<p class="instructions">In the real task, you will not see accuracy feedback. Instead, the box you choose will be outlined in <font color="blue">blue</font>.</p>
+         <p class="instructions">You will then be asked to rate your confidence on a scale, which we will explain next.</p>`
+      ];
+    } else {
+      return [
+        `<p class="instructions">In the real task, you will not see accuracy feedback. The box you choose will simply be outlined in <font color="blue">blue</font>.</p>`
+      ];
     }
   },
+  show_clickable_nav: true
+};
 
-
-
-// Presentation
-  {
-    type: jsPsychCanvasKeyboardResponse,
-    trial_duration: 300,
-    canvas_size: [788, 790],
-    stimulus: function(c){
-
-      if(staircase_on == true){ drawStim(c, Math.round(Math.exp(dots_diff)), jsPsych.timelineVariable('target_left')) }
-        if(staircase_on == false){ 
-
-          // Vary difficulty between 1 and 70 dots
-          if(random_diff == true){
-            var list = [];
-            for (var i = 1; i <= 70; i++) {
-              list.push(i);
-            }
-            dots_diff = jsPsych.randomization.sampleWithReplacement(list, 1);  
-
-            drawStim(c, Math.round(dots_diff), jsPsych.timelineVariable('target_left')) 
-
-          }
-
-          // Fix difficulty at the starting value
-          if(random_diff == false){
-            drawStim(c, Math.round(dots_diff), jsPsych.timelineVariable('target_left')) 
-
-          }
-
-
-
-        }
-
-      },
-      choices: "NO_KEYS",
-      on_finish: function(data){
-        data.trial_type = "Stimulus Presentation";
-        data.stimdevi = dots_diff;
-      }
-    },
-
-
-
-// Response
-    {
-      type: jsPsychCanvasKeyboardResponse,
-      canvas_size: [788, 790],
-      stimulus: function(c){
-        drawBlank(c, "black", "black")
-      },
-      choices: ['e','w'],
-      prompt: function(){
-        if(provide_feedback == true) {return '<p id = "prompt" style="position: absolute; max-width: 800px; top: 48%; left: 28%; font-size: 24px">Press W if the box on the left had more dots. Press E if the box on the right had more dots.</p>'} else {return ''}
-      },
-      on_load: function(){
-       if(provide_feedback == true) {
-        var w = window.innerWidth;
-        var element = document.getElementById('prompt');
-        var positionInfo = element.getBoundingClientRect();
-        var width = positionInfo.width;
-
-        element.style.left = (w-width)/2+'px';
-      }
-    },
-    on_finish: function(data){
-      //Scoring
-      data.correct = 0;
-      if(jsPsych.timelineVariable('target_left') == 1 & data.response == 'w') {data.correct = 1;}
-      if(jsPsych.timelineVariable('target_left') == 0 & data.response == 'e') {data.correct = 1;}
-
-      data.trial_type = "Stimulus Response"
-    }
-  },
-
-
-
-// Response Highlight
-  {
-    timeline:[{
-      type: jsPsychCanvasKeyboardResponse,
-      trial_duration: 500,
-      canvas_size: [788, 790],
-      stimulus: function(c){
-
-        var last_trial_response = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].response;
-        if(last_trial_response == "e") return drawBlank(c, "transparent", "blue")
-          if(last_trial_response == "w") return drawBlank(c, "blue", "transparent")
-        },
-      choices: "NO_KEYS",
-      on_finish: function(data){
-        data.trial_type = "Response Highlight";
-
-      }
-    }],
-    conditional_function: function(){
-      if(provide_feedback === true){
-        return false;
-      } else {
-        return true;
-      }
-    }
-  },
-
-
-// Confidence Rating
-  {
-    timeline: [
-
+/**
+ * Instructions about confidence scale appear only if confidence ratings are on.
+ */
+const conf_instruc = {
+  timeline: [
     {
       type: jsPsychHtmlSliderResponse,
-      stimulus: "<h3>Rate your confidence:</h3>" +
-      '<div id = "conf1" class = "conf" style = "height: 25px; width: 154px; margin-top: 2px; margin-left: 15px;"></div>' +
-      '<div id = "conf2" class = "conf" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 169px;"></div>' +
-      '<div id = "conf3" class = "conf" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 323px;"></div>' +
-      '<div id = "conf4" class = "conf" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 477px;"></div>' +
-      '<div id = "conf5" class = "conf" style = "height: 25px; width: 154px; margin-top: 2px;margin-left: 631px;"></div>',
+      css_classes: ["conf_instructions"],
+      stimulus: function() {
+        const header = jsPsych.timelineVariable('header');
+        return `<div id="header" style="position: relative;">${header}</div><br><br>
+          <div id="Iconf1" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 15px;"></div>
+          <div id="Iconf2" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 169px;"></div>
+          <div id="Iconf3" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 323px;"></div>
+          <div id="Iconf4" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 477px;"></div>
+          <div id="Iconf5" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 631px;"></div>`;
+      },
+      on_load: function() {
+        // Centers the slider segments
+        const w = window.innerWidth;
+        const marLeft = (w - 800) / 2;
+        document.getElementById("Iconf1").style.left = marLeft + "px";
+        document.getElementById("Iconf2").style.left = marLeft + "px";
+        document.getElementById("Iconf3").style.left = marLeft + "px";
+        document.getElementById("Iconf4").style.left = marLeft + "px";
+        document.getElementById("Iconf5").style.left = marLeft + "px";
+
+        // Possibly disable movement if needed
+        const elementx = document.getElementById("jspsych-html-slider-response-response");
+        elementx.disabled = jsPsych.timelineVariable('disable');
+      },
       min: 1,
       max: 6,
       step: 1,
+      slider_start: jsPsych.timelineVariable('start'),
       slider_width: 800,
-      require_movement: true,
-      labels: ['Guessing', "", "", "", "", "Certain"],
+      labels: ['Guessing', '', '', '', '', 'Certain'],
       button_label: "Submit",
-      on_finish: function(data){
-        data.trial_type = "Confidence Rating";
-
-      },
-      css_classes: ["conf_rating"]
-
+      require_movement: jsPsych.timelineVariable('require')
     }
-
-    ],
-    conditional_function: function(){
-      if(provide_feedback === true | ratings_on === false){
-        return false;
-      } else {
-        return true;
-      }
-    }
-  },
-
-// Provide Feedback 
-  {
-    timeline: [
-
-      {type: jsPsychCanvasKeyboardResponse,
-      trial_duration: 500,
-      canvas_size: [788, 790],
-      stimulus: function(c){
-
-        var last_trial_response = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].response;
-        var last_trial_correct = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].correct;
-
-
-        if(last_trial_correct == 1){col = "green"} else{col = "red"}
-
-          if(last_trial_response == "e") return drawBlank(c, "transparent", col)
-            if(last_trial_response == "w") return drawBlank(c, col, "transparent")
-          },
-
-        choices: "NO_KEYS",
-        prompt: function(data){
-         var last_trial_correct = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].correct;
-         if(last_trial_correct == 1){return '<p id = "prompt" style="position: absolute; max-width: 800px; top: 48%; left: 28%; font-size: 24px">Correct</p>'} else {return '<p id = "prompt" style="position: absolute; max-width: 800px; top: 48%; left: 28%; font-size: 24px">Incorrect</p>'}
-       },
-       on_load: function(){
-
-        var w = window.innerWidth;
-        var element = document.getElementById('prompt');
-        var positionInfo = element.getBoundingClientRect();
-        var width = positionInfo.width;
-
-        element.style.left = (w-width)/2+'px';
-      },
-      on_finish: function(data){
-        data.trial_type = "Feedback";
-
-      }
-    }
-    ],
-    conditional_function: function(){
-      if(provide_feedback === true){
-        return true;
-      } else {
-        return false;
-      }
-    }
-  },
-
-
-
-// Summary trial to store all the data typically required (nothing is displayed to the particpant) and do the staircasing
-  {
-    type: jsPsychCallFunction,
-    func: function(data){
-
-      accuracy = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).select('correct').values;
-      accuracy = accuracy.slice(Math.max(accuracy.length - 2, 0))
-
-      if(staircase_on == true){
-        stairs = staircase(dots_diff, accuracy, trialnum);
-
-        dots_diff = stairs.diff;
-
-      }
-
+  ],
+  timeline_variables: [
+    {
+      start: 3, require: true, disable: false,
+      header: `A rating scale as shown below is used throughout the task. 
+        You will select any point with your mouse.<br>Choose any point on the 
+        scale and click &apos;Submit&apos; to continue.`
     },
-    on_finish: function(data){
-      data.rt = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].rt;
-      data.phase = phase;
-      data.response = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].response;
-      data.correct = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last().values()[0].correct;
-      data.target_left = jsPsych.timelineVariable('target_left');
-      if(provide_feedback == false & ratings_on == true){
-        data.confidence = jsPsych.data.get().filter({trial_type: "Confidence Rating"}).last().values()[0].response;
-        data.feedback = "False";
-      } else {
-        data.feedback = "True";
-      }
-      if(staircase_on == true) data.stimdevi = Math.round(Math.exp(jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last().values()[0].stimdevi));
-      if(staircase_on == false) data.stimdevi = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last().values()[0].stimdevi;
-      data.trial_type = "Summary Trial"
-      trialnum++;
-
+    {
+      start: 6, require: false, disable: true,
+      header: `During the task, if you are <strong>very sure</strong> that you made 
+        the correct judgment, you should respond <strong>&apos;Certain&apos;</strong>.`
+    },
+    {
+      start: 1, require: false, disable: true,
+      header: `<p class="instructions">If you are <strong>very unsure</strong>, 
+        you should respond <strong>&apos;Guessing&apos;</strong>.</p>`
+    },
+    {
+      start: 4, require: true, disable: false,
+      header: `<p class="instructions">If you are <strong>somewhat sure</strong>, 
+        you should select a rating between these extremes.</p>
+        <p class="instructions">If you understand how to use the entire scale,
+        choose any point and click &apos;Submit&apos; to continue.</p>`
     }
-  },
-
-
-
   ],
-timeline_variables: [
-  {target_left: 1},
-  {target_left: 0},
-  ],
-randomize_order: true
+  conditional_function: function() {
+    return ratings_on === true;
+  }
 };
 
+/**
+ * Instructions displayed before starting the main (test) blocks.
+ */
+const test_start = {
+  type: jsPsychInstructions,
+  pages: function() {
+    if (ratings_on) {
+      return [
+        `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
+          You can take short breaks between blocks.</p>
+         <p class="instructions">There are no time limits on your responses or on your confidence ratings.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, 
+         or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+      ];
+    } else {
+      return [
+        `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
+          You can take short breaks between blocks.</p>
+         <p class="instructions">There is no time limit on your dot responses.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, 
+         or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+      ];
+    }
+  },
+  show_clickable_nav: true
+};
 
+/**
+ * Intermediate instruction that appears between blocks in the main task,
+ * reminding participants that they can take a break.
+ */
+const new_block = {
+  type: jsPsychInstructions,
+  pages: function() {
+    return [
+      `<p class="instructions">Block ${blocknum} of ${total_blocks} complete.<br><br>
+       You can pause for a break now.<br><br>
+       Remember:<br><strong>W</strong> if the <strong>left</strong> box had more dots,<br>
+       <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+    ];
+  },
+  show_clickable_nav: true,
+  on_finish: function() {
+    blocknum++;
+  }
+};
 
+/* 
+  ===============================================================
+  =                     DOT TRIAL PROCEDURE                      =
+  ===============================================================
+*/
 
+/**
+ * Main timeline that shows:
+ * 1) Fixation
+ * 2) Dot stimuli (brief)
+ * 3) Response (W/E)
+ * 4) Optional highlight or feedback
+ * 5) Optional confidence rating
+ * 6) Summary trial for data logging & possible staircasing
+ */
+const dot_trial = {
+  data: function() {
+    return { trialnum: trialnum, blocknum: blocknum };
+  },
+  timeline: [
+    /* Fullscreen check - if participant left fullscreen, re-request it */
+    {
+      timeline: [
+        {
+          type: jsPsychFullscreen,
+          message: '<p>You need to be in fullscreen mode to continue!<br><br>Click below to re-enter fullscreen.</p>',
+          fullscreen_mode: true,
+          on_finish: function() {
+            in_fullscreen = true;
+          }
+        }
+      ],
+      conditional_function: function() {
+        return !in_fullscreen;
+      }
+    },
 
+    /* Fixation cross */
+    {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<p id="fixation" style="position: absolute; font-size: 70px">+</p>',
+      on_load: function() {
+        // Center the fixation cross horizontally
+        const w = window.innerWidth;
+        const element = document.getElementById('fixation');
+        const positionInfo = element.getBoundingClientRect();
+        const width = positionInfo.width;
+        element.style.left = (w - width) / 2 + 'px';
 
+        // (Optional) Adjust vertical position if needed
+        const h = window.innerHeight;
+        const y = ((h - 795) / 2) + 35; 
+        element.style.top = y + 'px';
+      },
+      choices: 'NO_KEYS',
+      trial_duration: 1000,
+      on_finish: function(data) {
+        data.trial_type = "Fixation";
+      }
+    },
 
+    /* Stimulus presentation (brief) */
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      trial_duration: 300,
+      canvas_size: [788, 790],
+      stimulus: function(c) {
+        // If staircasing is on, use the current log-space difficulty.
+        if (staircase_on) {
+          drawStim(c, Math.round(Math.exp(dots_diff)), jsPsych.timelineVariable('target_left'));
+        } else {
+          // If random_diff is on (and no staircase), randomize between 1..70
+          if (random_diff) {
+            const randVal = jsPsych.randomization.sampleWithReplacement([...Array(70).keys()].map(i => i+1), 1);
+            dots_diff = randVal[0];
+          }
+          drawStim(c, Math.round(dots_diff), jsPsych.timelineVariable('target_left'));
+        }
+      },
+      choices: "NO_KEYS",
+      on_finish: function(data) {
+        data.trial_type = "Stimulus Presentation";
+        data.stimdevi = dots_diff; // log(difference) if staircase is on, or integer if off
 
+         // --- store the white-dot counts from drawStim ---
+        data.white_left = window.lastWhiteLeft;
+        data.white_right = window.lastWhiteRight;
+      }
+    },
 
+    /* Response (which side had more dots) */
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      canvas_size: [788, 790],
+      stimulus: function(c) {
+        // Show blank squares for the response
+        drawBlank(c, "black", "black");
+      },
+      choices: ['e','w'],
+      prompt: function() {
+        // If we are providing feedback (practice), we can show instructions
+        if (provide_feedback) {
+          return `<p id="prompt" style="position: absolute; max-width: 800px; 
+                  top: 48%; font-size: 24px">Press W if the left box had more dots, 
+                  or E if the right box had more dots.</p>`;
+        }
+        return '';
+      },
+      on_load: function() {
+        // Center the prompt if it exists
+        if (provide_feedback) {
+          const w = window.innerWidth;
+          const element = document.getElementById('prompt');
+          const positionInfo = element.getBoundingClientRect();
+          const width = positionInfo.width;
+          element.style.left = (w - width) / 2 + 'px';
+        }
+      },
+      on_finish: function(data) {
+        // Score correctness
+        data.correct = 0;
+        const targetLeft = jsPsych.timelineVariable('target_left');
+        if ((targetLeft === 1 && data.response === 'w') ||
+            (targetLeft === 0 && data.response === 'e')) {
+          data.correct = 1;
+        }
+        data.trial_type = "Stimulus Response";
+      }
+    },
 
-var debug = {
+    /* Response highlight (blue outline) if no feedback is provided */
+    {
+      timeline: [
+        {
+          type: jsPsychCanvasKeyboardResponse,
+          trial_duration: 500,
+          canvas_size: [788, 790],
+          stimulus: function(c) {
+            const lastResponse = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0].response;
+            if (lastResponse === "e") {
+              return drawBlank(c, "transparent", "blue");
+            } else {
+              return drawBlank(c, "blue", "transparent");
+            }
+          },
+          choices: "NO_KEYS",
+          on_finish: function(data) {
+            data.trial_type = "Response Highlight";
+          }
+        }
+      ],
+      conditional_function: function() {
+        // Only highlight if we're in the real test (no feedback)
+        return !provide_feedback;
+      }
+    },
+
+    /* Confidence rating (only if not providing feedback and if ratings_on is true) */
+    {
+      timeline: [
+        {
+          type: jsPsychHtmlSliderResponse,
+          stimulus: `<h3>Rate your confidence:</h3>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+            <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+          min: 1,
+          max: 6,
+          step: 1,
+          slider_width: 800,
+          require_movement: true,
+          labels: ['Guessing', '', '', '', '', 'Certain'],
+          button_label: "Submit",
+          on_finish: function(data) {
+            data.trial_type = "Confidence Rating";
+          },
+          css_classes: ["conf_rating"],
+          on_load: function() {
+            // Center the slider
+            const w = window.innerWidth;
+            const marLeft = (w - 800) / 2;
+            document.getElementById("conf1").style.left = marLeft + "px";
+            document.getElementById("conf2").style.left = marLeft + "px";
+            document.getElementById("conf3").style.left = marLeft + "px";
+            document.getElementById("conf4").style.left = marLeft + "px";
+            document.getElementById("conf5").style.left = marLeft + "px";
+          }
+        }
+      ],
+      conditional_function: function() {
+        return (!provide_feedback && ratings_on);
+      }
+    },
+
+    /* Provide feedback (practice phase only) */
+    {
+      timeline: [
+        {
+          type: jsPsychCanvasKeyboardResponse,
+          trial_duration: 500,
+          canvas_size: [788, 790],
+          stimulus: function(c) {
+            const lastTrial = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+            const col = (lastTrial.correct === 1) ? "green" : "red";
+            // If user chose right, highlight right; if left, highlight left
+            if (lastTrial.response === "e") {
+              return drawBlank(c, "transparent", col);
+            } else {
+              return drawBlank(c, col, "transparent");
+            }
+          },
+          choices: "NO_KEYS",
+          prompt: function() {
+            const lastTrial = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+            return `<p id="prompt" style="position:absolute; max-width:800px; top:48%; font-size:24px">
+              ${lastTrial.correct === 1 ? 'Correct' : 'Incorrect'}
+            </p>`;
+          },
+          on_load: function() {
+            // Center the feedback text
+            const w = window.innerWidth;
+            const element = document.getElementById('prompt');
+            const positionInfo = element.getBoundingClientRect();
+            const width = positionInfo.width;
+            element.style.left = (w - width) / 2 + 'px';
+          },
+          on_finish: function(data) {
+            data.trial_type = "Feedback";
+          }
+        }
+      ],
+      conditional_function: function() {
+        // Only provide feedback in practice
+        return provide_feedback;
+      }
+    },
+
+    /* Summary trial: store main data and handle the staircase updating. 
+       This doesn't display anything to the participant. */
+    {
+      type: jsPsychCallFunction,
+      func: function() {
+        // Grab the last two correctness values for the adaptive staircase
+        let accuracy = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).select('correct').values;
+        accuracy = accuracy.slice(Math.max(accuracy.length - 2, 0)); // get last 2
+
+        // If using staircasing, update dots_diff
+        if (staircase_on) {
+          const stairs = staircase(dots_diff, accuracy, trialnum);
+          dots_diff = stairs.diff; 
+        }
+      },
+      on_finish: function(data) {
+        // Save relevant trial data into the summary trial itself
+        const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+        data.rt        = lastResp.rt;          // Reaction time
+        data.phase     = phase;                // Practice or Test
+        data.response  = lastResp.response;    // 'e' or 'w'
+        data.correct   = lastResp.correct;     // 1 or 0
+        data.target_left = jsPsych.timelineVariable('target_left');
+        
+        if (!provide_feedback && ratings_on) {
+          // If confidence rating was used, store it
+          const lastConf = jsPsych.data.get().filter({trial_type: "Confidence Rating"}).last(1).values()[0];
+          data.confidence = lastConf.response;
+          data.feedback   = "False";
+        } else {
+          data.feedback = "True";
+        }
+
+        // --- Retrieve and store the white-dot counts in summary ---
+        const lastStim = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last(1).values()[0];
+        data.white_left  = lastStim.white_left;
+        data.white_right = lastStim.white_right;
+
+        // Store the actual dot difference: if staircasing, store exponentiated
+        if (staircase_on) {
+          data.stimdevi = Math.round(
+            Math.exp(
+              jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last(1).values()[0].stimdevi
+            )
+          );
+        } else {
+          data.stimdevi = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last(1).values()[0].stimdevi;
+        }
+
+        data.trial_type = "Summary Trial";
+        trialnum++;
+      }
+    }
+  ],
+  // We randomize target_left within each iteration
+  timeline_variables: [
+    { target_left: 1 },
+    { target_left: 0 }
+  ],
+  randomize_order: true
+};
+
+/* 
+  ===============================================================
+  =           BLOCKS (PRACTICE & TEST) DEFINITION               =
+  ===============================================================
+*/
+
+// Practice block (with feedback)
+const practice_block = {
+  timeline: [dot_trial],
+  repetitions: no_practice_trials / 2, 
+  on_timeline_start: function() {
+    provide_feedback = true;
+    phase = "Practice";
+  }
+};
+
+// Test block (no feedback, possible confidence rating)
+const test_block = {
+  timeline: [dot_trial],
+  repetitions: no_trials / 2, 
+  on_timeline_start: function() {
+    provide_feedback = false;
+    phase = "Test";
+  }
+};
+
+/* 
+  ===============================================================
+  =                    FINAL DEBRIEF & SAVE                     =
+  ===============================================================
+*/
+
+// Optional debug question: Issues encountered?
+const debug = {
   type: jsPsychSurveyText,
   questions: [
     {prompt: 'Did you experience any issues while completing this study?', rows: 5}
-    ]
-}
+  ]
+};
 
-
-
-  // Blocks
-
-const practice_block = {
-  timeline: [dot_trial],
-  repetitions: no_practice_trials/2,
-  on_timeline_start: function(){
-    provide_feedback = true; 
-    phase = "Practice";
-  }
-}
-
-
-const test_block = {
-  timeline: [dot_trial],
-  repetitions: no_trials/2,
-  on_timeline_start: function(){
-    provide_feedback = false; 
-    phase = "Test";
-  }
-}
-
-
-
-
-
-
-
-
-// Save data and redirect [shouldn't need to edit below]
-
-
-
-
-
-// Capture any url paramaters
+// Capture URL parameters (Prolific, SONA, pilot, etc.)
 const PROLIFIC_PID = jsPsych.data.getURLVariable('PROLIFIC_PID');
-const SONAID = jsPsych.data.getURLVariable('SONAID');
-const pilot = jsPsych.data.getURLVariable('pilot');
+const SONAID       = jsPsych.data.getURLVariable('SONAID');
+const pilot        = jsPsych.data.getURLVariable('pilot');
 
+// Decide how to redirect user depending on whether they're from SONA or Prolific
+let redirect_link, attention_redirect_link;
 
-// Redirect based on SONA vs Prolific
+if (typeof SONAID !== 'undefined') {
+  // SONA
+  jsPsych.data.addProperties({ participant_id: SONAID, Source: "SONA" });
+  redirect_link = `https://sydneypsych.sona-systems.com/webstudy_credit.aspx?experiment_id=${sona_experiment_id}&credit_token=${sona_credit_token}&survey_code=${SONAID}&id=${SONAID}`;
+  attention_redirect_link = `https://sydney.au1.qualtrics.com/jfe/form/SV_3h2qh8pBAnv00QK?SONAID=${SONAID}accuracy=`;
+} else {
+  // Prolific
+  jsPsych.data.addProperties({ participant_id: PROLIFIC_PID, Source: "Prolific" });
+  redirect_link = `https://app.prolific.com/submissions/complete?cc=${Prolific_redirect}`;
+  attention_redirect_link = `https://app.prolific.co/submissions/complete?cc=${Prolific_failed_check}`;
+}
 
-    // SONA
-if(typeof SONAID != 'undefined'){
+// Filename and location to save data
+const subject_id = jsPsych.randomization.randomID(10);
+const filename   = `${subject_id}.csv`;
 
-  jsPsych.data.addProperties({participant_id: SONAID});
-  jsPsych.data.addProperties({Source: "SONA"});
+// We use jsPsychPipe to save to OSF (or another DataPipe-supported platform)
+const save_data = {
+  type: jsPsychPipe,
+  action: "save",
+  experiment_id: DataPipe_ID,
+  filename: filename,
+  data_string: () => jsPsych.data.get().csv()
+};
 
-  redirect_link = "https://sydneypsych.sona-systems.com/webstudy_credit.aspx?experiment_id="+sona_experiment_id+"&credit_token="+sona_credit_token+"&survey_code=" + SONAID + "&id=" + SONAID;
-    attention_redirect_link = "https://sydney.au1.qualtrics.com/jfe/form/SV_3h2qh8pBAnv00QK?SONAID=" + SONAID + "accuracy=" + jsPsych.data.get().filter({trial_type: "Summary Trial"}).select('correct').mean(); // A seperate link for those who fail the attention check
+/* 
+  ===============================================================
+  =                 BUILD AND RUN THE EXPERIMENT                =
+  ===============================================================
+*/
 
+/**
+ * Full timeline for Condition 1. 
+ * (You can create separate timelines/conditions if desired.)
+ */
+const condition_1_timeline = [
+  browser_check,
+  enter_fullscreen,
+  participant_info_paid,  // from info_sheets.js 
+  participant_info_SONA,  // from info_sheets.js
+  demographics,           // from info_sheets.js
+  instructions,
+  practice_block,
+  practice_end,
+  conf_instruc,
+  test_start,
+  test_block,
+  new_block,
+  test_block,
+  new_block,
+  test_block,
+  new_block,
+  test_block,
+  debug,
+  save_data,
+  DEBRIEF_SONA            // from info_sheets.js
+];
 
+/**
+ * Asynchronously fetches a 'condition' from DataPipe (if needed),
+ * then runs the corresponding timeline. If you do not use multiple
+ * conditions, you could simply run condition_1_timeline directly.
+ */
+async function createExperiment() {
+  const condition = await jsPsychPipe.getCondition(DataPipe_ID);
+  jsPsych.data.addProperties({ condition: condition });
+  
+  // If you have different conditions, you could add them here:
+  if (condition == 0 || condition == 1) {
+    jsPsych.run(condition_1_timeline);
+  } else {
+    // Default fallback
+    jsPsych.run(condition_1_timeline);
   }
+}
 
-    // PROLIFIC
-  if(typeof SONAID === 'undefined'){
-
-    jsPsych.data.addProperties({participant_id: PROLIFIC_PID});
-    jsPsych.data.addProperties({Source: "Prolific"});
-
-    redirect_link ="https://app.prolific.com/submissions/complete?cc=" + Prolific_redirect;
-    attention_redirect_link ="https://app.prolific.co/submissions/complete?cc=" + Prolific_failed_check; // A seperate link for those who fail the attention check
-  }
-
-
-
-
-  // Save to OSF
-  const subject_id = jsPsych.randomization.randomID(10);
-  const filename = `${subject_id}.csv`;
-
-
-
-  const save_data = {
-    type: jsPsychPipe,
-    action: "save",
-    experiment_id: DataPipe_ID,
-    filename: filename,
-    data_string: ()=>jsPsych.data.get().csv()
-  };
-
-
-
-// Create Experiment
-
-  condition_1_timeline = [ browser_check, enter_fullscreen, participant_info_paid, participant_info_SONA, demographics, instructions, practice_block, practice_end, conf_instruc, test_start, test_block, new_block, test_block, new_block, test_block,new_block, test_block, new_block, test_block, debug, save_data, DEBRIEF_SONA];
-
-  async function createExperiment(){
-    const condition = await jsPsychPipe.getCondition(DataPipe_ID);
-    jsPsych.data.addProperties({condition: condition});
-    if(condition == 0) { timeline = condition_1_timeline; }
-    if(condition == 1) { timeline = condition_1_timeline; }
-    jsPsych.run(timeline);
-  }
-
-
-
-
-  createExperiment();
-
-
+// Start the experiment
+createExperiment();
 </script>
 </html>
