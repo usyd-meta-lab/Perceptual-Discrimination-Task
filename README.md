@@ -108,7 +108,7 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 - <a href="https://doi.org/10.1016/j.biopsych.2017.12.017"> Roualt et al. (2018).**Psychiatric Symptom Dimensions Are Associated With Dissociable Shifts in Metacognition but Not Task Performance**. *Biological Psychiatry*. 
 - **jsPsych documentation**: <https://www.jspsych.org>
 - **jsPsychPipe**: <https://github.com/brown-ccv/jsPsychPipe>
-- **Staircase Procedure**: Adjusted within `staircase.js`.
+- **Staircase Procedure**: Adjusted within `dot-difference-functions.js`.
 
 ---
 
