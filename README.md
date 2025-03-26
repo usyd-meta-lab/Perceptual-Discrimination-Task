@@ -95,7 +95,7 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 
 ## Common Customizations
 - **Change the Dot Stimulus**: Adjust the grid size or dot color in `dot-difference-functions.js` if you want different visuals.
-- **Modify the Staircase**: See `staircase.js` to change how difficulty is updated each trial.
+- **Modify the Staircase**: See `dot-difference-functions.js` to change how difficulty is updated each trial.
 - **Confidence Scale Labels**: The default 6-point scale is labeled from `"Guessing"` to `"Certain"`. Edit these labels in the `conf_instruc` and `dot_trial` confidence rating sections.
 
 ## Troubleshooting
