@@ -11,7 +11,7 @@ This repository contains a jsPsych experiment that asks participants to discrimi
 ├── index.html                # Main experiment file containing the jsPsych setup
 ├── custom-css.css           # Custom CSS for styling
 ├── dot-difference-functions.js # Functions to draw the stimuli and staircase difficulty
-├── README.md                # (This file) Explanation of parameters & usage
+├── README.md                # Explanation of parameters & usage
 └── ...
 ```
 *Additional jsPsych plugin scripts are loaded via CDNs.*
