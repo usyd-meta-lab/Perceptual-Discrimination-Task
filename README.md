@@ -1,5 +1,4 @@
 
----
 
 # README: Perceptual Decision Making  Task
 
