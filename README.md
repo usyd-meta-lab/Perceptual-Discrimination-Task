@@ -22,7 +22,7 @@ This repository contains a jsPsych experiment that asks participants to discrimi
 - **Libraries**: jsPsych (v7.x.x) and the relevant plugin scripts are included by CDN in `index.html`. No manual installation is required if you have internet access.
 
 ## Key Experiment Parameters
-Many of these parameters are found in the `index.html` script or in `global-env.js`. Below is a reference guide:
+Many of these parameters are found in the `index.html` script. Below is a reference guide:
 
 ### Data & Redirects
 - **DataPipe_ID** (default: `"vUyxuIvNMDjb"`)  
