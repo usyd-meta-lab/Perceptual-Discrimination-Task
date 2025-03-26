@@ -9,11 +9,8 @@ This repository contains a jsPsych experiment that asks participants to discrimi
 ```
 .
 ├── index.html                # Main experiment file containing the jsPsych setup
-├── global-env.js            # Contains global environment variables (pilot mode, etc.)
-├── info_sheets.js           # Contains info sheets, participant info trials, and debrief
 ├── custom-css.css           # Custom CSS for styling
-├── dot-difference-functions.js
-├── staircase.js
+├── dot-difference-functions.js # Functions to draw the stimuli and staircase difficulty
 ├── README.md                # (This file) Explanation of parameters & usage
 └── ...
 ```
