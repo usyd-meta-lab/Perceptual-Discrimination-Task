@@ -74,8 +74,8 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 
 ### Additional Variables from External Scripts
 - **participant_info_paid**, **participant_info_SONA**, **demographics**  
-  - Trials that capture participant info, consent, or demographic details (defined in `info_sheets.js`).  
-  - Customize these if your IRB/ethics requires different info.
+  - Trials that capture participant info, consent, or demographic details (defined in `info_sheets.js` which is read in from the lab website automatically).  
+  - Customize these if your ethics requires different info.
 - **DEBRIEF_SONA**  
   - Debrief screen for SONA participants (also in `info_sheets.js`).
 
