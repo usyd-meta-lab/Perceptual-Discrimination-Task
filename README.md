@@ -52,7 +52,7 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 ### Staircase & Difficulty
 - **staircase_on** (default: `true`)  
   - Determines whether an adaptive staircase is used to adjust difficulty (dot difference).  
-  - If `true`, the code uses a logistic or “log-space” approach (see `staircase.js`).  
+  - If `true`, the code uses a logistic or “log-space” approach (see `dot-difference-functions.js`).  
   - If `false`, a fixed difference or a random difference (see next parameter) is used.
 - **random_diff** (default: `false`)  
   - If `true` and `staircase_on` is `false`, dot differences will be randomly selected between 1 and 70 on each trial.  
