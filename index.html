@@ -73,6 +73,8 @@ const jsPsych = initJsPsych({
     var total_time = jsPsych.getTotalTime();
     jsPsych.data.addProperties({ total_time: total_time });
     
+    //jsPsych.data.get().localSave('csv','mydata.csv'); // Turn on to save a local copy
+
     if (aborted === false) {
       const meanCorrect = jsPsych.data.get().filter({trial_type: "Summary Trial"}).select('correct').mean();
       if (meanCorrect < 0.55) {
@@ -718,7 +720,7 @@ if (typeof SONAID !== 'undefined') {
 
 // Filename and location to save data
 const subject_id = jsPsych.randomization.randomID(10);
-const filename   = `${subject_id}.csv`;
+const filename   = `participant-${subject_id}_data.csv`;
 
 // We use jsPsychPipe to save to OSF (or another DataPipe-supported platform)
 const save_data = {
