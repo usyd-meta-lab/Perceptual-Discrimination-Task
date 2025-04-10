@@ -69,7 +69,10 @@ const jsPsych = initJsPsych({
       alert("You must use Chrome or Firefox to complete this experiment.");
     }
 
-    // If not aborted, check average accuracy from summary trials
+    // If not aborted, first save total time and then check average accuracy from summary trials
+    var total_time = jsPsych.getTotalTime();
+    jsPsych.data.addProperties({ total_time: total_time });
+    
     if (aborted === false) {
       const meanCorrect = jsPsych.data.get().filter({trial_type: "Summary Trial"}).select('correct').mean();
       if (meanCorrect < 0.55) {
@@ -95,6 +98,7 @@ const sona_credit_token = "NA";       // The SONA credit token
 const Prolific_redirect = "CHGWKNI0"; // The Prolific redirect link (to credit)
 const Prolific_failed_check = "C13PIUOF"; // The Prolific redirect link for failing an attention check
 const task_time = 30; // (minutes) for the PIS
+var start_time = jsPsych.getStartTime();
 
 // Global toggles
 let staircase_on = true;    // Whether to use adaptive staircasing
@@ -114,6 +118,7 @@ let phase = null;           // Tracks current phase: "Practice" or "Test"
 // Store which features are being used in the data
 jsPsych.data.addProperties({ staircase_on: staircase_on });
 jsPsych.data.addProperties({ ratings_on: ratings_on });
+jsPsych.data.addProperties({ start_time: start_time });
 
 /* 
   ===============================================================
