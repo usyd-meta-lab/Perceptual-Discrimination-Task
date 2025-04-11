@@ -3,14 +3,13 @@
 # README: Perceptual Decision Making  Task
 
 ## Overview
-This repository contains a jsPsych experiment that asks participants to discriminate which of two boxes contains more dots (left or right). After making a choice, they may be asked to rate their confidence in that decision. The experiment supports data collection from various recruitment sources (e.g., Prolific, SONA) and can be configured to save data via jsPsychPipe to a remote server or local storage.
+This repository contains a jsPsych experiment that asks participants to discriminate which of two boxes contains more dots (left or right). After making a choice, they are asked to rate their confidence in that decision. The experiment supports data collection from various recruitment sources (e.g., Prolific, SONA) and can be configured to save data via jsPsychPipe to a remote server or local storage.
 
 ## File Structure
 ```
 .
 ├── index.html                # Main experiment file containing the jsPsych setup
 ├── custom-css.css           # Custom CSS for styling
-├── dot-difference-functions.js # Functions to draw the stimuli and staircase difficulty
 ├── README.md                # Explanation of parameters & usage
 └── ...
 ```
@@ -19,7 +18,7 @@ This repository contains a jsPsych experiment that asks participants to discrimi
 ## Setup & Requirements
 - **Browser**: The code checks that participants are using Chrome or Firefox on desktop for best compatibility.
 - **Screen**: The experiment is designed to be run in **fullscreen mode**, which is enforced before the main trials begin.
-- **Libraries**: jsPsych (v7.x.x) and the relevant plugin scripts are included by CDN in `index.html`. No manual installation is required if you have internet access.
+- **Libraries**: jsPsych (v8.x.x) and the relevant plugin scripts are included by CDN in `index.html`. No manual installation is required if you have internet access.
 
 ## Key Experiment Parameters
 Many of these parameters are found in the `index.html` script. Below is a reference guide:
@@ -43,28 +42,16 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 - **task_time** (default: `30`)  
   - The nominal time in minutes for which the Participant Information Sheet (PIS) says the task will take. This is for instructions only (no actual timer used).
 - **no_practice_trials** (default: `25`)  
-  - Number of trials in the *practice* block (split evenly between left-target and right-target within each repetition).
+  - Number of trials in the *practice* block.
 - **no_trials** (default: `42`)  
-  - Number of trials in each *test* block (likewise split evenly each repetition).
+  - Number of trials in each *test* block.
 - **total_blocks** (default: `5`)  
   - Number of main (test) blocks. A short break is offered before each new block.
 
 ### Staircase & Difficulty
-- **staircase_on** (default: `true`)  
-  - Determines whether an adaptive staircase is used to adjust difficulty (dot difference).  
-  - If `true`, the code uses a logistic or “log-space” approach (see `dot-difference-functions.js`).  
-  - If `false`, a fixed difference or a random difference (see next parameter) is used.
-- **random_diff** (default: `false`)  
-  - If `true` and `staircase_on` is `false`, dot differences will be randomly selected between 1 and 70 on each trial.  
-  - If `false` and `staircase_on` is `false`, the difficulty is fixed at `dots_diff`.
 - **dots_diff** (default: `4.25`)  
-  - In log-space if `staircase_on == true` (log(4.25) ~ 1.44 means an initial difference of ~70 dots).  
-  - If `staircase_on == false` and `random_diff == false`, this is the fixed difference in dot count (e.g., `dots_diff = 4.25` → ~4 dots difference).  
+  - In log-space (log(4.25) ~ 1.44 means an initial difference of ~70 dots).  
 
-### Confidence Ratings
-- **ratings_on** (default: `true`)  
-  - If `true`, participants are asked to rate their confidence on a Likert scale after making each judgment (excluding practice trials).
-  - If `false`, no confidence rating is collected, and the experiment only records choice and correctness.
 
 ### Phase Tracking & Bookkeeping
 - **phase**  
@@ -94,8 +81,6 @@ Many of these parameters are found in the `index.html` script. Below is a refere
 - For local debugging, you can temporarily enable `jsPsych.data.get().localSave('csv','mydata.csv');` in the `on_finish` callback to save a CSV locally (commented out in the code).
 
 ## Common Customizations
-- **Change the Dot Stimulus**: Adjust the grid size or dot color in `dot-difference-functions.js` if you want different visuals.
-- **Modify the Staircase**: See `dot-difference-functions.js` to change how difficulty is updated each trial.
 - **Confidence Scale Labels**: The default 6-point scale is labeled from `"Guessing"` to `"Certain"`. Edit these labels in the `conf_instruc` and `dot_trial` confidence rating sections.
 
 ## Troubleshooting
