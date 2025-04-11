@@ -40,7 +40,7 @@
       background-color: #A3A3A3;
     }
   </style>
-</style>
+
 </head>
 
 <body></body>
@@ -50,7 +50,7 @@
 
 
 
-/* 
+
 
 /* 
   ===============================================================
@@ -269,18 +269,10 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
  */
     const practice_end = {
       type: jsPsychInstructions,
-      pages: function() {
-        if (ratings_on) {
-          return [
+      pages:  [
             `<p class="instructions">In the real task, you will not see accuracy feedback. Instead, the box you choose will be outlined in <font color="blue">blue</font>.</p>
             <p class="instructions">You will then be asked to rate your confidence on a scale, which we will explain next.</p>`
-          ];
-        } else {
-          return [
-            `<p class="instructions">In the real task, you will not see accuracy feedback. The box you choose will simply be outlined in <font color="blue">blue</font>.</p>`
-          ];
-        }
-      },
+          ],
       show_clickable_nav: true
     };
 
@@ -349,10 +341,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
         <p class="instructions">If you understand how to use the entire scale,
           choose any point and click &apos;Submit&apos; to continue.</p>`
         }
-      ],
-      conditional_function: function() {
-        return ratings_on === true;
-      }
+      ]
     };
 
 /**
@@ -466,32 +455,54 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
 */
 
 
-    var dot_trial = {
-      timeline: [
+/**
+ * Defines the dot trial timeline for the task.
+ *
+ * This timeline includes:
+ *   1. A fixation cross trial.
+ *   2. A brief stimulus presentation trial that shows two boxes with dots.
+ *   3. A stimulus response trial where the participant indicates which side has more dots.
+ *   4. A feedback trial that highlights the selected response with an outline (blue, green, or red).
+ *   5. A confidence rating trial where participants rate how confident they were in their response (conditionally displayed).
+ *   6. A summary trial that logs the trial data and updates the staircase parameters.
+ *
+ * External variables referenced in this timeline include:
+ *   - `staircase`: An object that holds the current staircase information including `current_log` and `consecutive_correct`.
+ *   - `phase`: A variable indicating the current phase (e.g., "Test" or "Practice").
+ *   - `trialnum`: A counter for the current trial number.
+ *   - `provide_feedback`: A flag that indicates whether feedback should be provided.
+ */
+var dot_trial = {
+  timeline: [
+    // 1. Fixation cross trial
+    {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<p style="font-size: 70pt;">+</p>',
+      choices: "NO_KEYS",
+      trial_duration: 1000
+    },
 
-          /* Fixation cross */
-        {
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: '<p style = "font-size: 70pt;">+</p>',
-          choices: "NO_KEYS",
-          trial_duration: 1000
-        },
-
-          /* Stimulus presentation (brief) */
-
-        {
-          type: jsPsychCanvasKeyboardResponse,
-          canvas_size: [800, 1000],
-          stimulus: function(c){
-
-          // Set up the dot counts.
-        var baseline = 313;  // half-filled box (313 dots)
-        // Choose a random increment between 1 and 70.
-        var increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
-        var highCount = baseline + increment;
+    // 2. Stimulus presentation (brief)
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      canvas_size: [800, 1000],
+      /**
+       * Draws stimuli on a canvas with two boxes having different dot counts.
+       * It calculates the baseline dot count, determines an increment based on a staircase procedure,
+       * randomly assigns the higher dot count to either the left or right box, and determines the correct response key.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element on which the stimuli will be drawn.
+       * @returns {undefined} Calls drawStimuli to display the boxes and dots.
+       */
+      stimulus: function(c) {
+        // Set up the dot counts.
+        const baseline = 313;  // half-filled box (313 dots)
+        // Choose a random increment between 1 and 70 scaled by an exponential function of the staircase log value.
+        const increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
+        const highCount = baseline + increment;
 
         // Randomly assign the higher dot count to the left or right box.
-        var leftDots, rightDots;
+        let leftDots, rightDots;
         if (Math.random() < 0.5) {
           leftDots = highCount;
           rightDots = baseline;
@@ -500,9 +511,8 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
           rightDots = highCount;
         }
 
-
-      // Determine the correct response key.
-        var correct_key;
+        // Determine the correct response key based on which box has more dots.
+        let correct_key, target_left;
         if (leftDots > rightDots) {
           correct_key = 'w';
           target_left = true;
@@ -510,7 +520,8 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
           correct_key = 'e';
           target_left = false;
         }
-            // Save these values for later use.
+
+        // Save these values in a temporary global object for later use in subsequent trials.
         window.current_trial_dots = {
           leftDots: leftDots,
           rightDots: rightDots,
@@ -520,15 +531,15 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
           target_left: target_left
         };
 
-
+        // Draw the stimuli (both boxes with dots).
         return drawStimuli(c, true, "black", "black", leftDots, rightDots);
       },
       trial_duration: 300,
       choices: "NO_KEYS",
-      on_finish: function(data){
+      on_finish: function(data) {
         data.trial_type = "Stimulus Presentation";
 
-        // Retrieve the values from the temporary storage and add them to the trial data.
+        // Retrieve the dot configuration values saved during stimulus drawing and add them to the trial data.
         data.leftDots   = window.current_trial_dots.leftDots;
         data.rightDots  = window.current_trial_dots.rightDots;
         data.baseline   = window.current_trial_dots.baseline;
@@ -536,55 +547,72 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
         data.correct_key = window.current_trial_dots.correct_key;
         data.target_left = window.current_trial_dots.target_left;
         data.current_log = staircase.current_log;
-
       }
     },
 
-
-    /* Response (which side had more dots) */
+    // 3. Stimulus Response trial: Participant responds which side had more dots.
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [800, 1000],
-      stimulus: function(c){
+      /**
+       * Draws the two boxes without dots for the response phase.
+       * The participant's task is to respond by pressing either 'w' or 'e'.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element on which the boxes are drawn.
+       * @returns {undefined} Calls drawStimuli to render the boxes.
+       */
+      stimulus: function(c) {
         return drawStimuli(c, false, "black", "black");
       },
       choices: ['w', 'e'],
       on_finish: function(data) {
         data.trial_type = "Stimulus Response";
 
-        // Score the accuracy of the response
-        if(data.response == window.current_trial_dots.correct_key){
+        // Score the response accuracy by comparing the key pressed to the correct key.
+        if (data.response == window.current_trial_dots.correct_key) {
           data.correct = 1;
         } else {
           data.correct = 0;
         }
 
-     // Clean up the temporary variable.
+        // Clean up the temporary storage.
         delete window.current_trial_dots;
-
       }
     },
 
-      /* Response highlight (blue outline) if no feedback is provided */
-
+    // 4. Response highlight trial (Feedback display)
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [800, 1000],
       trial_duration: 500,
-      stimulus: function(c){
-        // Store last response and correct
+      /**
+       * Provides visual feedback by drawing a blue outline (if no feedback is to be given)
+       * or green/red outlines based on the response correctness.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element for drawing the feedback.
+       * @returns {undefined} Calls drawStimuli to show boxes with highlighted sides.
+       */
+      stimulus: function(c) {
+        // Retrieve the last response data.
         const lastResponse = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0].response;
         const lastCorrect = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0].correct;
-        if(provide_feedback == false) feedbackColor = "blue"; // colour if no feedback
-        if(provide_feedback == true && lastCorrect == 1) feedbackColor = "green"; // colour if feedback and correct
-        if(provide_feedback == true && lastCorrect == 0) feedbackColor = "red"; //colour if feedback and incorrect
+        let feedbackColor;
 
+        // Determine the feedback color based on whether feedback is provided and whether the response was correct.
+        if (provide_feedback === false) {
+          feedbackColor = "blue"; // Color if no feedback provided
+        } else if (provide_feedback === true && lastCorrect === 1) {
+          feedbackColor = "green"; // Color for correct response when feedback is provided
+        } else if (provide_feedback === true && lastCorrect === 0) {
+          feedbackColor = "red";   // Color for incorrect response when feedback is provided
+        }
+
+        // Highlight the box based on the response key.
         if (lastResponse === "e") {
           return drawStimuli(c, false, "black", feedbackColor);
         } else {
           return drawStimuli(c, false, feedbackColor, "black");
         }
-
       },
       choices: "NO_KEYS",
       on_finish: function(data) {
@@ -592,118 +620,115 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
       }
     },
 
-
-      /* Confidence Rating */
-
+    // 5. Confidence Rating trial (conditional)
     {
       timeline: [
         {
-         type: jsPsychHtmlSliderResponse,
-         stimulus: `<h3>Rate your confidence:</h3>
+          type: jsPsychHtmlSliderResponse,
+          stimulus: `<h3>Rate your confidence:</h3>
             <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
             <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
             <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
             <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
-         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
-         min: 1,
-         max: 6,
-         step: 1,
-         slider_width: 800,
-         require_movement: true,
-         labels: ['Guessing', '', '', '', '', 'Certain'],
-         button_label: "Submit",
-         on_finish: function(data) {
-          data.trial_type = "Confidence Rating";
-        },
-        css_classes: ["conf_rating"],
-        on_load: function() {
-            // Center the slider
-          const w = window.innerWidth;
-          const marLeft = (w - 800) / 2;
-          document.getElementById("conf1").style.left = marLeft + "px";
-          document.getElementById("conf2").style.left = marLeft + "px";
-          document.getElementById("conf3").style.left = marLeft + "px";
-          document.getElementById("conf4").style.left = marLeft + "px";
-          document.getElementById("conf5").style.left = marLeft + "px";
+            <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+          min: 1,
+          max: 6,
+          step: 1,
+          slider_width: 800,
+          require_movement: true,
+          labels: ['Guessing', '', '', '', '', 'Certain'],
+          button_label: "Submit",
+          on_finish: function(data) {
+            data.trial_type = "Confidence Rating";
+          },
+          css_classes: ["conf_rating"],
+          on_load: function() {
+            // Center the slider by calculating the left margin.
+            const w = window.innerWidth;
+            const marLeft = (w - 800) / 2 + "px";
+            document.getElementById("conf1").style.left = marLeft;
+            document.getElementById("conf2").style.left = marLeft;
+            document.getElementById("conf3").style.left = marLeft;
+            document.getElementById("conf4").style.left = marLeft;
+            document.getElementById("conf5").style.left = marLeft;
+          }
         }
+      ],
+      /**
+       * This conditional function ensures that the confidence rating
+       * trial is only provided during the Test phase.
+       *
+       * @returns {boolean} Returns true when the phase is "Test", otherwise false.
+       */
+      conditional_function: function() {
+        return phase === "Test";
       }
-    ],
-    conditional_function: function() {
-        // Only provide feedback in practice
-      return phase == "Test";
-    }
-  },
+    },
 
-
-
-
-        /* Summary trial: store main data and handle the staircase updating. 
-       This doesn't display anything to the participant. */
-  {
-    type: jsPsychCallFunction,
-    func: function() {
-
-      // Staircase  ****-------------***
-
-       // Determine if the response was correct.
-      const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
-      var correct = lastResp.correct;
-
+    // 6. Summary trial: Stores data and updates the staircase.
+    {
+      type: jsPsychCallFunction,
+      /**
+       * Updates the staircase following a two-down one-up rule based on response accuracy
+       * and logs relevant trial data. The step size decreases with increasing trial numbers.
+       */
+      func: function() {
+        // Retrieve the last stimulus response trial.
+        const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+        const correct = lastResp.correct;
 
         // Determine the current step-size (in log-space) based on trial number.
-      if (trialnum <= 5) {
-        step_size = 0.4;
-      } else if (trialnum <= 10) {
-        step_size = 0.2;
-      } else {
-        step_size = 0.1;
-      }
+        let step_size;
+        if (trialnum <= 5) {
+          step_size = 0.4;
+        } else if (trialnum <= 10) {
+          step_size = 0.2;
+        } else {
+          step_size = 0.1;
+        }
 
-        // Update the staircase following the two-down one-up rule:
-      if (correct) {
-        staircase.consecutive_correct += 1;
-        if (staircase.consecutive_correct >= 2) {
-            // Two correct in a row: make the task harder by reducing dot difference.
-          staircase.current_log -= step_size;
-            staircase.consecutive_correct = 0;  // Reset counter.
+        // Update the staircase using the two-down one-up rule.
+        if (correct) {
+          staircase.consecutive_correct += 1;
+          if (staircase.consecutive_correct >= 2) {
+            // Two correct responses in a row: make the task harder by reducing the dot difference.
+            staircase.current_log -= step_size;
+            staircase.consecutive_correct = 0; // Reset counter.
           }
         } else {
-          // Incorrect: make the task easier.
+          // Incorrect response: make the task easier.
           staircase.current_log += step_size;
           staircase.consecutive_correct = 0;
         }
 
-        console.log("Trial:", trialnum, 
-          "| Correct:", correct, 
-          "| Updated log:", staircase.current_log);
-
-
+        console.log("Trial:", trialnum, "| Correct:", correct, "| Updated log:", staircase.current_log);
       },
       on_finish: function(data) {
-        // Save relevant trial data into the summary trial itself
+        // Log the reaction time and associate the stimulus response data with the summary trial.
         const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
-        data.rt        = lastResp.rt;          // Reaction time
-        data.phase     = phase;                // Practice or Test
-        data.response  = lastResp.response;    // 'e' or 'w'
-        data.correct   = lastResp.correct;     // 1 or 0
+        data.rt         = lastResp.rt;
+        data.phase      = phase;          // Phase (Practice or Test)
+        data.response   = lastResp.response;
+        data.correct    = lastResp.correct;
+        // Retrieve the last presentation trial data to log dot counts and differences.
         const lastPres = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last(1).values()[0];
-        data.target_left = lastPres.target_left; // target was left
-        data.leftDots   = lastPres.leftDots; // dots on the left
-        data.rightDots  = lastPres.rightDots; // dots on the right
-        data.dot_difference  = lastPres.increment; // dot difference
-        data.current_log = lastPres.current_log // dot difference in log space
+        data.target_left     = lastPres.target_left;
+        data.leftDots        = lastPres.leftDots;
+        data.rightDots       = lastPres.rightDots;
+        data.dot_difference  = lastPres.increment;
+        data.current_log     = lastPres.current_log;
 
-        if(phase == "Test") {const lastConf = jsPsych.data.get().filter({trial_type: "Confidence Rating"}).last(1).values()[0];
-        data.confidence = lastConf.response;
+        // Retrieve confidence response if in Test phase.
+        if (phase === "Test") {
+          const lastConf = jsPsych.data.get().filter({trial_type: "Confidence Rating"}).last(1).values()[0];
+          data.confidence = lastConf.response;
+        }
+        data.trial_type = "Summary Trial";
+        trialnum++;  // Increment the trial number.
       }
-      data.trial_type = "Summary Trial";
-      trialnum++;
-
     }
-  }
-
-]
-}
+  ]
+};
 
 
 
@@ -740,21 +765,13 @@ const test_block_trial = {
 
 // Define Practice Block
 const practice_block = {
-  timeline: [practice_block_trial, practice_end],
-  on_timeline_start: function() {
-    provide_feedback = true;
-    phase = "Practice";
-  }
+  timeline: [practice_block_trial, practice_end]
 };
 
 // Define aTest Block
 const test_blocks = {
   timeline: [new_block, test_block_trial],
-  repetitions: total_blocks , 
-  on_timeline_start: function() {
-    provide_feedback = false;
-    phase = "Test";
-  }
+  repetitions: total_blocks 
 };
 
 
@@ -786,7 +803,7 @@ if (typeof SONAID !== 'undefined') {
   // SONA
   jsPsych.data.addProperties({ participant_id: SONAID, Source: "SONA" });
   redirect_link = `https://sydneypsych.sona-systems.com/webstudy_credit.aspx?experiment_id=${sona_experiment_id}&credit_token=${sona_credit_token}&survey_code=${SONAID}&id=${SONAID}`;
-  attention_redirect_link = `https://sydney.au1.qualtrics.com/jfe/form/SV_3h2qh8pBAnv00QK?SONAID=${SONAID}accuracy=`;
+  attention_redirect_link = `https://sydney.au1.qualtrics.com/jfe/form/SV_3h2qh8pBAnv00QK?SONAID=${SONAID}&accuracy=`;
 } else {
   // Prolific
   jsPsych.data.addProperties({ participant_id: PROLIFIC_PID, Source: "Prolific" });
@@ -849,7 +866,7 @@ async function createExperiment() {
   jsPsych.data.addProperties({ condition: condition });
 
   // If you have different conditions, you could add them here:
-  if (condition == 0 || condition == 1) {
+  if (condition == 0) {
     jsPsych.run(condition_1_timeline);
   } else {
     // Default fallback
