@@ -379,7 +379,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
       type: jsPsychInstructions,
       pages: function() {
         return [
-          `<p class="instructions">Block ${blocknum} of ${total_blocks} complete.<br><br>
+          `<p class="instructions">Block ${blocknum} of ${total_blocks}.<br><br>
        You can pause for a break now.<br><br>
        Remember:<br><strong>W</strong> if the <strong>left</strong> box had more dots,<br>
           <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
@@ -839,6 +839,7 @@ const save_data = {
  * (You can create separate timelines/conditions if desired.)
  */
 const condition_1_timeline = [
+  test_blocks,
   browser_check,
   enter_fullscreen,
   participant_info_paid,  // from info_sheets.js 
