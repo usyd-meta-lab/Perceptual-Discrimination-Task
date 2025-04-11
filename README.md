@@ -73,7 +73,7 @@ usyd-meta-lab/
 │
 ├── index.html              # Main HTML file containing experiment code.
 ├── custom-css.css          # Custom CSS to style the experiment.
-├── info_sheets.js          # Contains participant information screens and other variables.
+├── info_sheets.js          # Contains participant information screens and other variables [loaded externally so most recent documents are used].
 ├── README.md               # This README file.
 └── ...                     # (Additional assets, e.g., images, may be included)
 ```
