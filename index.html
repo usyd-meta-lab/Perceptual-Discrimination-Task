@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>USYD Metacognition</title>
+  <title>USYD Meta Lab</title>
   <link rel="icon" type="image/x-icon" href="https://usyd-meta-lab.github.io/favicon-32x32.png">
 
   <!-- Load jsPsych and dependencies -->
@@ -142,10 +142,23 @@ var staircase = {
 
 
 
-    // -------------------------------------------------------------------
-    // Function to draw dots on a given box.
-    // The function randomly selects cells from a 25x25 grid (i.e., 625 possible positions)
-    // and draws white dots (filled circles) in those positions.
+/**
+ * Draws a specified number of random dots within a square area on a canvas.
+ *
+ * The function divides the given square (starting at the top-left corner defined by
+ * boxX and boxY, with a total width/height defined by boxSize) into a grid of 25 rows
+ * and 25 columns (625 positions). It then creates an array of all potential cell positions within the grid,
+ * shuffles these positions, selects the first numDots positions, and draws a white filled circle 
+ * (dot) at the center of each selected cell.
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context used for drawing.
+ * @param {number} boxX - The x-coordinate of the top-left corner of the square area.
+ * @param {number} boxY - The y-coordinate of the top-left corner of the square area.
+ * @param {number} boxSize - The width and height of the square area.
+ * @param {number} numDots - The number of dots to draw.
+ */
+
+
 function drawDots(ctx, boxX, boxY, boxSize, numDots) {
       var gridSize = 25;              // 25 columns and 25 rows
       var cellSize = boxSize / gridSize; // Each cell's width (and height)
@@ -157,7 +170,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
         }
       }
       // Shuffle the array to randomize the positions.
-      positions = shuffle(positions);
+      positions = jsPsych.randomization.repeat(positions, 1);
       // Select the first numDots positions.
       var selected = positions.slice(0, numDots);
       // Draw a white filled circle (dot) at the center of each selected cell.
@@ -172,25 +185,22 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
       });
     }
 
-    // Utility function to shuffle an array (Fisher-Yates shuffle).
-    function shuffle(array) {
-      for (var i = array.length - 1; i > 0; i--){
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-      }
-      return array;
-    }
 
 
-
-/* 
-  ===============================================================
-  =                     DEFINE STIMULI                      =
-  ===============================================================
-*/
-
+/**
+ * Draws stimuli on a canvas element by rendering two boxes and, optionally, drawing dots within them.
+ *
+ * The function creates two boxes—one on the left and one on the right—with predetermined positions
+ * and sizes. It fills each box with the specified colors. If the `dotsOn` flag is true, the function
+ * draws a specified number of dots within each box using a grid-based approach (via the drawDots function).
+ *
+ * @param {HTMLCanvasElement} c - The canvas element on which the stimuli will be drawn.
+ * @param {boolean} dotsOn - Determines whether to draw dots inside the boxes. If true, dots are drawn.
+ * @param {string} leftboxFill - The fill color for the left box (e.g., "#000000" for black).
+ * @param {string} rightboxFill - The fill color for the right box.
+ * @param {number} leftDots - The number of dots to draw in the left box.
+ * @param {number} rightDots - The number of dots to draw in the right box.
+ */
 
 
     function drawStimuli(c, dotsOn, leftboxFill, rightboxFill, leftDots, rightDots){
@@ -458,8 +468,6 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
 
     var dot_trial = {
       timeline: [
-
-
 
           /* Fixation cross */
         {
