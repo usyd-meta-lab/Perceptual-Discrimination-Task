@@ -1,99 +1,113 @@
+# Perceptual Decision Making Task
 
+This repository contains the code for the **Perceptual Decision Making Task**, an online psychology experiment developed using [jsPsych](https://www.jspsych.org/). In this study, participants judge which of two images contains more dots and then rate their confidence in their judgment. The experiment features practice and test phases, a dynamic staircase procedure for adjusting difficulty, and adaptive feedback based on participant performance.
 
-# README: Perceptual Decision Making  Task
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Task Parameters](#task-parameters)
+- [Installation & Usage](#installation--usage)
+- [Code Structure](#code-structure)
+- [Dependencies](#dependencies)
+- [License](#license)
 
 ## Overview
-This repository contains a jsPsych experiment that asks participants to discriminate which of two boxes contains more dots (left or right). After making a choice, they are asked to rate their confidence in that decision. The experiment supports data collection from various recruitment sources (e.g., Prolific, SONA) and can be configured to save data via jsPsychPipe to a remote server or local storage.
 
-## File Structure
+The experiment is implemented in HTML and JavaScript, using jsPsych v8.2.1 and several of its plugins for creating various trial types. The experiment includes the following components:
+
+- **Instructions**: Introductory screens, practice trials with feedback, and test trials without feedback.
+- **Stimuli**: Two boxes displayed on a canvas with a variable number of white dots.
+- **Response Collection**: Participants respond using keyboard inputs (`W` or `E`).
+- **Confidence Rating**: A slider response to rate confidence (enabled only during the Test phase).
+- **Staircase Procedure**: An adaptive algorithm to adjust task difficulty based on participant accuracy.
+- **Data Saving**: Experiment data is collected and then saved via a data pipe.
+
+## Features
+
+- **Adaptive Difficulty**: Uses a two-down one-up staircase method to dynamically adjust the difficulty.
+- **Flexible Setup**: Task parameters can be easily modified through dedicated variables.
+- **Responsive Feedback**: Visual feedback is provided on practice trials.
+- **Participant Routing**: Redirects participants based on platform-specific conditions (SONA vs. Prolific).
+
+## Task Parameters
+
+The following table lists the key task parameters defined in the code:
+
+| **Parameter**         | **Description**                                                                      | **Default Value / Example** |
+|-----------------------|--------------------------------------------------------------------------------------|-----------------------------|
+| `no_trials`           | Number of trials in each main block                                                  | 42                          |
+| `no_practice_trials`  | Number of practice trials                                                            | 25                          |
+| `total_blocks`        | Total number of blocks (only used for instructions)                                  | 5                           |
+| `dots_diff`           | Starting difficulty (log-space), influencing the dot difference                      | 4.25                        |
+| `in_fullscreen`       | Tracks whether participant is in fullscreen                                          | `true`                      |
+| `provide_feedback`    | Tracks feedback mode (`true` during practice, `false` during test blocks)              | _Undefined initially_       |
+| `trialnum`            | Trial counter                                                                        | 1                           |
+| `blocknum`            | Block counter                                                                        | 1                           |
+| `aborted`             | Indicates whether the user was aborted from the experiment                           | `false`                     |
+| `phase`               | Tracks current phase: `"Practice"` or `"Test"`                                       | `null`                      |
+
+## Installation & Usage
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/yourusername/usyd-meta-lab.git
+   cd usyd-meta-lab
+   ```
+
+2. **Host Files:**
+   You can host the experiment on any web server (e.g., GitHub Pages, Apache, or a Node.js server). For GitHub Pages, push your repository to GitHub and enable GitHub Pages in the repository settings.
+
+3. **Open the Experiment:**
+   Navigate to the URL where your files are hosted (e.g., `https://yourusername.github.io/usyd-meta-lab/`) to start the experiment.
+
+4. **External Dependencies:**
+   Make sure the external scripts (such as [jsPsych](https://www.jspsych.org/) and its plugins) load correctly. This setup assumes an active internet connection.
+
+## Code Structure
+
+The repository is structured as follows:
+
 ```
-.
-├── index.html                # Main experiment file containing the jsPsych setup
-├── custom-css.css           # Custom CSS for styling
-├── README.md                # Explanation of parameters & usage
-└── ...
+usyd-meta-lab/
+│
+├── index.html              # Main HTML file containing experiment code.
+├── custom-css.css          # Custom CSS to style the experiment.
+├── info_sheets.js          # Contains participant information screens and other variables.
+├── README.md               # This README file.
+└── ...                     # (Additional assets, e.g., images, may be included)
 ```
-*Additional jsPsych plugin scripts are loaded via CDNs.*
 
-## Setup & Requirements
-- **Browser**: The code checks that participants are using Chrome or Firefox on desktop for best compatibility.
-- **Screen**: The experiment is designed to be run in **fullscreen mode**, which is enforced before the main trials begin.
-- **Libraries**: jsPsych (v8.x.x) and the relevant plugin scripts are included by CDN in `index.html`. No manual installation is required if you have internet access.
+- **index.html:**  
+  Contains the entire experiment script including initialization, instructions, task procedure, and data saving routines.
 
-## Key Experiment Parameters
-Many of these parameters are found in the `index.html` script. Below is a reference guide:
+- **info_sheets.js:**  
+  Contains external variables and functions for handling participant info and debrief screens, and any other details required by the experiment.
 
-### Data & Redirects
-- **DataPipe_ID** (default: `"vUyxuIvNMDjb"`)  
-  - Unique identifier for saving data via jsPsychPipe. Replace with your own if you have a separate DataPipe instance.
-- **sona_experiment_id** (default: `"NA"`)  
-  - Numerical ID for the experiment on SONA (if recruiting from SONA).
-- **sona_credit_token** (default: `"NA"`)  
-  - The unique credit token associated with your SONA experiment.
-- **Prolific_redirect** (default: `"CHGWKNI0"`)  
-  - Completion code for Prolific participants (appended to the Prolific redirect link).
-- **Prolific_failed_check** (default: `"C13PIUOF"`)  
-  - Alternative completion code for participants who fail an attention check.
-- **redirect_link** / **attention_redirect_link**  
-  - Constructed at runtime depending on whether the participant arrived via Prolific or SONA.  
-  - If participants meet performance criteria (e.g., a minimum accuracy), they are redirected to `redirect_link`. Otherwise, they are redirected to `attention_redirect_link`.
+## Dependencies
 
-### Timing & Trial Parameters
-- **task_time** (default: `30`)  
-  - The nominal time in minutes for which the Participant Information Sheet (PIS) says the task will take. This is for instructions only (no actual timer used).
-- **no_practice_trials** (default: `25`)  
-  - Number of trials in the *practice* block.
-- **no_trials** (default: `42`)  
-  - Number of trials in each *test* block.
-- **total_blocks** (default: `5`)  
-  - Number of main (test) blocks. A short break is offered before each new block.
+- [jsPsych](https://www.jspsych.org/) (v8.2.1)
+- [jQuery](https://jquery.com/) (v2.1.3)
+- [Foundation](https://foundation.zurb.com/) (v5.5.2)
+- Various jsPsych plugins:
+  - [Plugin Instructions](https://www.jspsych.org/)
+  - [Plugin HTML Keyboard Response](https://www.jspsych.org/)
+  - [Plugin HTML Button Response](https://www.jspsych.org/)
+  - [Plugin Survey Text](https://www.jspsych.org/)
+  - [Plugin External HTML](https://www.jspsych.org/)
+  - [Plugin Preload](https://www.jspsych.org/)
+  - [Plugin HTML Slider Response](https://www.jspsych.org/)
+  - [Plugin Browser Check](https://www.jspsych.org/)
+  - [Plugin Canvas Keyboard Response](https://www.jspsych.org/)
+  - [Plugin Call Function](https://www.jspsych.org/)
+  - [Plugin Fullscreen](https://www.jspsych.org/)
+  - [Plugin Survey HTML Form](https://www.jspsych.org/)
+  - [Plugin Survey Likert](https://www.jspsych.org/)
+  - [jsPsych-Contrib Pipe](https://www.jspsych.org/)
 
-### Staircase & Difficulty
-- **dots_diff** (default: `4.25`)  
-  - In log-space (log(4.25) ~ 1.44 means an initial difference of ~70 dots).  
+Please check the project’s HTML file for the most current dependency versions and URLs.
 
+## License
 
-### Phase Tracking & Bookkeeping
-- **phase**  
-  - Internal variable in the code: `"Practice"` or `"Test"`. Used for data labeling.
-- **trialnum**, **blocknum**  
-  - Counters incremented after each trial/block, useful for saving trial-by-trial data.
-
-### Additional Variables from External Scripts
-- **participant_info_paid**, **participant_info_SONA**, **demographics**  
-  - Trials that capture participant info, consent, or demographic details (defined in `info_sheets.js` which is read in from the lab website automatically).  
-  - Customize these if your ethics requires different info.
-- **DEBRIEF_SONA**  
-  - Debrief screen for SONA participants (also in `info_sheets.js`).
-
-## How to Run Locally
-1. **Download / Clone** this repository.
-2. **Open** `index.html` in a Chrome or Firefox browser. (Local file or via a simple local web server.)
-3. The experiment should launch; you’ll see the participant information pages, instructions, practice block, etc.
-
-## How to Deploy Online
-- You can **upload** these files to a web server (e.g., GitHub Pages, your lab’s server, or a hosting service).
-- Provide participants with the link (e.g., `https://mysite.org/index.html?SONAID=12345` or `?PROLIFIC_PID=ABCDE`), so that SONA or Prolific IDs are captured in the query parameters.
-- Data will be saved via **jsPsychPipe** if the `DataPipe_ID` and the remote server are configured properly. Check that your server allows calls from your domain.
-
-## Data Storage & Export
-- **jsPsychPipe**: The experiment includes a final trial that calls the plugin `jsPsychPipe` to upload data (in `.csv` format) to the location identified by `DataPipe_ID`.
-- For local debugging, you can temporarily enable `jsPsych.data.get().localSave('csv','mydata.csv');` in the `on_finish` callback to save a CSV locally (commented out in the code).
-
-## Common Customizations
-- **Confidence Scale Labels**: The default 6-point scale is labeled from `"Guessing"` to `"Certain"`. Edit these labels in the `conf_instruc` and `dot_trial` confidence rating sections.
-
-## Troubleshooting
-- **Not Saving Data**: Ensure your `DataPipe_ID` is correct and the server supports cross-origin requests.  
-- **Browser Restriction**: If participants keep getting blocked, check that `jsPsychBrowserCheck` includes the correct logic for accepted browsers/devices.  
-- **Fullscreen**: Some participants on older operating systems might not have a reliable fullscreen API; you can disable the fullscreen check by editing the `enter_fullscreen` timeline.
-
-## References
-- **Maniscalco, B., & Lau, H. (2014).** Signal detection theory analysis of type 1 and type 2 data: meta-d’, response-specific meta-d’, and the unequal variance SDT model. *The Cognitive Neuroscience of Metacognition* (pp. 25–66). Springer.
-- <a href="https://doi.org/10.1016/j.biopsych.2017.12.017"> Roualt et al. (2018).**Psychiatric Symptom Dimensions Are Associated With Dissociable Shifts in Metacognition but Not Task Performance**. *Biological Psychiatry*. 
-- **jsPsych documentation**: <https://www.jspsych.org>
-- **jsPsychPipe**: <https://github.com/brown-ccv/jsPsychPipe>
-- **Staircase Procedure**: Adjusted within `dot-difference-functions.js`.
-
----
+This project is licensed under the [MIT License](LICENSE). Feel free to modify and distribute as per the license terms.
 
