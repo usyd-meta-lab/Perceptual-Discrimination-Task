@@ -55,7 +55,7 @@ The following table lists the key task parameters defined in the code:
    You can host the experiment on any web server (e.g., GitHub Pages, Apache, or a Node.js server). For GitHub Pages, push your repository to GitHub and enable GitHub Pages in the repository settings.
 
 3. **Open the Experiment:**
-   Navigate to the URL where your files are hosted (e.g., `https://yourusername.github.io/dot discrimination/`) to start the experiment.
+   Navigate to the URL where your files are hosted (e.g., `https://yourusername.github.io/dot-discrimination/`) to start the experiment.
 
 4. **External Dependencies:**
    Make sure the external scripts (such as [jsPsych](https://www.jspsych.org/) and its plugins) load correctly. This setup assumes an active internet connection.
