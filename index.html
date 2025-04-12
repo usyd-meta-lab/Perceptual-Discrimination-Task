@@ -633,15 +633,18 @@ var dot_trial = {
         const increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
         const highCount = baseline + increment;
 
-        // Randomly assign the higher dot count to the left or right box.
+   
+
+        // Randomly assign the higher dot count to the left or right box based on timeline (to ensure balance).
         let leftDots, rightDots;
-        if (Math.random() < 0.5) {
+        if(jsPsych.evaluateTimelineVariable('target_left')){
           leftDots = highCount;
           rightDots = baseline;
-        } else {
+          } else {
           leftDots = baseline;
           rightDots = highCount;
         }
+
 
         // Determine the correct response key based on which box has more dots.
         let correct_key, target_left;
@@ -862,7 +865,12 @@ var dot_trial = {
         trialnum++;  // Increment the trial number.
       }
     }
-  ]
+  ],
+  timeline_variables: [
+    {target_left: true},
+    {target_left: false},
+  ],
+    randomize_order: true
 };
 
 
@@ -880,7 +888,7 @@ var dot_trial = {
 // Define a single practice block trial (with feedback)
 const practice_block_trial = {
   timeline: [dot_trial],
-  repetitions: no_practice_trials, 
+  repetitions: no_practice_trials/2, 
   on_timeline_start: function() {
     provide_feedback = true;
     phase = "Practice";
@@ -890,7 +898,7 @@ const practice_block_trial = {
 // Define a single test block (no feedback, confidence rating)
 const test_block_trial = {
   timeline: [dot_trial],
-  repetitions: no_trials , 
+  repetitions: no_trials/2 , 
   on_timeline_start: function() {
     provide_feedback = false;
     phase = "Test";
