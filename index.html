@@ -113,8 +113,8 @@ const task_time = 30; // (minutes) for the PIS
 
 
 // Task parameters: 
-let no_trials = 42;         // Number of trials in each main block
-let no_practice_trials = 25;// Number of practice trials
+let no_trials = 2;         // Number of trials in each main block
+let no_practice_trials = 2;// Number of practice trials
 let total_blocks = 5;       // Total number of blocks (only used for instructions)
 let dots_diff = 4.25;       // Starting difficulty (log-space)
 let in_fullscreen = true;   // Tracks whether participant is in fullscreen
@@ -258,7 +258,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
         <p class="instructions">Use the entire scale from &apos;Guessing&apos; to &apos;Certain.&apos;</p>`,
 
         `<p class="instructions">Let&#39;s do some practice trials. Respond only after the dots have disappeared.</p>
-         <p class="instructions">During practice, you will see feedback indicating correct or incorrect judgments.</p>
+         <p class="instructions">During practice, you will see feedback indicating <font color="green">correct</font> or <font color="red">incorrect</font> judgments.</p>
         <p class="instructions">No confidence rating is needed during these practice trials.</p>`
       ],
       show_clickable_nav: true
@@ -270,126 +270,235 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
     const practice_end = {
       type: jsPsychInstructions,
       pages:  [
-            `<p class="instructions">In the real task, you will not see accuracy feedback. Instead, the box you choose will be outlined in <font color="blue">blue</font>.</p>
-            <p class="instructions">You will then be asked to rate your confidence on a scale, which we will explain next.</p>`
-          ],
+        `<p class="instructions">In the real task, you will not see accuracy feedback. Instead, the box you choose will be outlined in <font color="blue">blue</font>.</p>
+        <p class="instructions">You will then be asked to rate your confidence on a scale, which we will explain next.</p>`
+      ],
       show_clickable_nav: true
     };
 
 /**
  * Instructions about confidence scale appear only if confidence ratings are on.
  */
+
     const conf_instruc = {
       timeline: [
+        // First Screen
         {
-          type: jsPsychHtmlSliderResponse,
-          css_classes: ["conf_instructions"],
-          stimulus: function() {
-            const header = jsPsych.timelineVariable('header');
-            return `<div id="header" style="position: relative;">${header}</div><br><br>
-          <div id="Iconf1" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 15px;"></div>
-          <div id="Iconf2" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 169px;"></div>
-          <div id="Iconf3" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 323px;"></div>
-          <div id="Iconf4" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 477px;"></div>
-            <div id="Iconf5" class="conf_ins" style="height: 25px; width: 154px; margin-top: 2px; margin-left: 631px;"></div>`;
-          },
-          on_load: function() {
-        // Centers the slider segments
-            const w = window.innerWidth;
-            const marLeft = (w - 800) / 2;
-            document.getElementById("Iconf1").style.left = marLeft + "px";
-            document.getElementById("Iconf2").style.left = marLeft + "px";
-            document.getElementById("Iconf3").style.left = marLeft + "px";
-            document.getElementById("Iconf4").style.left = marLeft + "px";
-            document.getElementById("Iconf5").style.left = marLeft + "px";
-
-        // Possibly disable movement if needed
-            const elementx = document.getElementById("jspsych-html-slider-response-response");
-            elementx.disabled = jsPsych.timelineVariable('disable');
-          },
-          min: 1,
-          max: 6,
-          step: 1,
-          slider_start: jsPsych.timelineVariable('start'),
-          slider_width: 800,
-          labels: ['Guessing', '', '', '', '', 'Certain'],
-          button_label: "Submit",
-          require_movement: jsPsych.timelineVariable('require')
-        }
-      ],
-      timeline_variables: [
-        {
-          start: 3, require: true, disable: false,
-          header: `A rating scale as shown below is used throughout the task. 
+         type: jsPsychHtmlSliderResponse,
+         stimulus: `A rating scale as shown below is used throughout the task. 
         You will select any point with your mouse.<br>Choose any point on the 
-          scale and click &apos;Submit&apos; to continue.`
+          scale and click &apos;Submit&apos; to continue.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+         min: 1,
+         max: 6,
+         step: 1,
+         slider_width: 800,
+         require_movement: true,
+         labels: ['Guessing', '', '', '', '', 'Certain'],
+         button_label: "Submit",
+         on_finish: function(data) {
+          data.trial_type = "Confidence Rating";
         },
-        {
-          start: 6, require: false, disable: true,
-          header: `During the task, if you are <strong>very sure</strong> that you made 
-          the correct judgment, you should respond <strong>&apos;Certain&apos;</strong>.`
-        },
-        {
-          start: 1, require: false, disable: true,
-          header: `<p class="instructions">If you are <strong>very unsure</strong>, 
-          you should respond <strong>&apos;Guessing&apos;</strong>.</p>`
-        },
-        {
-          start: 4, require: true, disable: false,
-          header: `<p class="instructions">If you are <strong>somewhat sure</strong>, 
-        you should select a rating between these extremes.</p>
-        <p class="instructions">If you understand how to use the entire scale,
-          choose any point and click &apos;Submit&apos; to continue.</p>`
+        css_classes: ["conf_rating"],
+        on_load: function() {
+            // Center the slider by calculating the left margin.
+          const w = window.innerWidth;
+          const marLeft = (w - 800) / 2 + "px";
+          document.getElementById("conf1").style.left = marLeft;
+          document.getElementById("conf2").style.left = marLeft;
+          document.getElementById("conf3").style.left = marLeft;
+          document.getElementById("conf4").style.left = marLeft;
+          document.getElementById("conf5").style.left = marLeft;
         }
-      ]
-    };
+      },
+
+       // Second Screen
+        {
+         type: jsPsychHtmlSliderResponse,
+         stimulus: `During the task, if you are <strong>very sure</strong> that you made the correct judgement, you should respond <strong>&apos;Certain&apos;</strong><br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+         min: 1,
+         max: 6,
+         step: 1,
+         slider_width: 800,
+         require_movement: false,
+         labels: ['Guessing', '', '', '', '', 'Certain'],
+         button_label: "Continue",
+         on_finish: function(data) {
+          data.trial_type = "Confidence Rating";
+        },
+        css_classes: ["conf_rating"],
+        on_load: function() {
+          document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+          const w = window.innerWidth;
+          const marLeft = (w - 800) / 2 + "px";
+          document.getElementById("conf1").style.left = marLeft;
+          document.getElementById("conf2").style.left = marLeft;
+          document.getElementById("conf3").style.left = marLeft;
+          document.getElementById("conf4").style.left = marLeft;
+          document.getElementById("conf5").style.left = marLeft;
+        }
+      },
+
+// Third Screen
+        {
+         type: jsPsychHtmlSliderResponse,
+         stimulus: `If you are <strong>very unsure</strong> you made the correct judgement, you should respond <strong>&apos;Guessing&apos;</strong><br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+         min: 1,
+         max: 6,
+         step: 1,
+         slider_width: 800,
+         slider_start: 1,
+         require_movement: false,
+         labels: ['Guessing', '', '', '', '', 'Certain'],
+         button_label: "Continue",
+         on_finish: function(data) {
+          data.trial_type = "Confidence Rating";
+        },
+        css_classes: ["conf_rating"],
+        on_load: function() {
+          document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+          const w = window.innerWidth;
+          const marLeft = (w - 800) / 2 + "px";
+          document.getElementById("conf1").style.left = marLeft;
+          document.getElementById("conf2").style.left = marLeft;
+          document.getElementById("conf3").style.left = marLeft;
+          document.getElementById("conf4").style.left = marLeft;
+          document.getElementById("conf5").style.left = marLeft;
+        }
+      },
+
+
+// Fourth Screen
+        {
+         type: jsPsychHtmlSliderResponse,
+         stimulus: `If you are <strong>somewhat sure</strong> about being correct, you should select a rating between the two descriptions.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+         min: 1,
+         max: 7,
+         step: 1,
+         slider_width: 800,
+         slider_start: 4,
+         require_movement: false,
+         labels: ['Guessing', '', '', '', '', 'Certain'],
+         button_label: "Continue",
+         on_finish: function(data) {
+          data.trial_type = "Confidence Rating";
+        },
+        css_classes: ["conf_rating"],
+        on_load: function() {
+          document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+          const w = window.innerWidth;
+          const marLeft = (w - 800) / 2 + "px";
+          document.getElementById("conf1").style.left = marLeft;
+          document.getElementById("conf2").style.left = marLeft;
+          document.getElementById("conf3").style.left = marLeft;
+          document.getElementById("conf4").style.left = marLeft;
+          document.getElementById("conf5").style.left = marLeft;
+        }
+      },
+
+       // Fifth Screen
+        {
+         type: jsPsychHtmlSliderResponse,
+         stimulus: `If you understand how to use and take advantage of the whole rating scale, choose any point on the rating scale and click &apos;Submit&apos; to continue.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+         <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+         min: 1,
+         max: 6,
+         step: 1,
+         slider_width: 800,
+         require_movement: true,
+         labels: ['Guessing', '', '', '', '', 'Certain'],
+         button_label: "Submit",
+         on_finish: function(data) {
+          data.trial_type = "Confidence Rating";
+        },
+        css_classes: ["conf_rating"],
+        on_load: function() {
+            // Center the slider by calculating the left margin.
+          const w = window.innerWidth;
+          const marLeft = (w - 800) / 2 + "px";
+          document.getElementById("conf1").style.left = marLeft;
+          document.getElementById("conf2").style.left = marLeft;
+          document.getElementById("conf3").style.left = marLeft;
+          document.getElementById("conf4").style.left = marLeft;
+          document.getElementById("conf5").style.left = marLeft;
+        }
+      },
+
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Instructions displayed before starting the main (test) blocks.
  */
-    const test_start = {
-      type: jsPsychInstructions,
-      pages: function() {
-        if (ratings_on) {
-          return [
-            `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
+const test_start = {
+  type: jsPsychInstructions,
+  pages: [
+        `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
           You can take short breaks between blocks.</p>
          <p class="instructions">There are no time limits on your responses or on your confidence ratings.</p>
          <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, 
-            or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
-          ];
-        } else {
-          return [
-            `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
-          You can take short breaks between blocks.</p>
-         <p class="instructions">There is no time limit on your dot responses.</p>
-         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, 
-            or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
-          ];
-        }
-      },
-      show_clickable_nav: true
-    };
+        or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+      ],
+  show_clickable_nav: true
+};
 
 /**
  * Intermediate instruction that appears between blocks in the main task,
  * reminding participants that they can take a break.
  */
-    const new_block = {
-      type: jsPsychInstructions,
-      pages: function() {
-        return [
-          `<p class="instructions">Block ${blocknum} of ${total_blocks}.<br><br>
+const new_block = {
+  type: jsPsychInstructions,
+  pages: function() {
+    return [
+      `<p class="instructions">Block ${blocknum} of ${total_blocks}.<br><br>
        You can pause for a break now.<br><br>
        Remember:<br><strong>W</strong> if the <strong>left</strong> box had more dots,<br>
-          <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
-        ];
-      },
-      show_clickable_nav: true,
-      on_finish: function() {
-        blocknum++;
-      }
-    };
+      <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+    ];
+  },
+  show_clickable_nav: true,
+  on_finish: function() {
+    blocknum++;
+  }
+};
 
 
 
@@ -400,53 +509,53 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
 */
 
 // Check that participant is using Chrome or Firefox on a desktop
-    const browser_check = {
-      timeline: [
-        {
-          type: jsPsychBrowserCheck,
-          inclusion_function: (data) => {
+const browser_check = {
+  timeline: [
+    {
+      type: jsPsychBrowserCheck,
+      inclusion_function: (data) => {
         // Accept only if browser is Chrome or Firefox and not on mobile
-            return ['chrome', 'firefox'].includes(data.browser) && data.mobile === false;
-          },
-          exclusion_message: (data) => {
-            aborted = true;
-            if (data.mobile) {
-              return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
-            } else if (!['chrome','firefox'].includes(data.browser)) {
-              return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>';
-            }
-          }
+        return ['chrome', 'firefox'].includes(data.browser) && data.mobile === false;
+      },
+      exclusion_message: (data) => {
+        aborted = true;
+        if (data.mobile) {
+          return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
+        } else if (!['chrome','firefox'].includes(data.browser)) {
+          return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>';
         }
-      ],
-      conditional_function: function() {
-    // Skip this check if pilot mode
-        if (pilot === 'true') {
-          return false;
-        } 
-        return true;
       }
-    };
+    }
+  ],
+  conditional_function: function() {
+    // Skip this check if pilot mode
+    if (pilot === 'true') {
+      return false;
+    } 
+    return true;
+  }
+};
 
 // Request participant enter fullscreen
-    const enter_fullscreen = {
-      timeline: [
-        {
-          type: jsPsychFullscreen,
-          message: '<p>To take part in the experiment, your browser must be in fullscreen mode. Exiting fullscreen mode will pause the experiment.<br><br>Please click the button below to enable fullscreen and continue.</p>',
-          fullscreen_mode: true,
-          on_finish: function(){
-            in_fullscreen = true;
-          }
-        }
-      ],
-      conditional_function: function() {
-    // Skip if pilot
-        if (pilot === 'true') {
-          return false;
-        } 
-        return true;
+const enter_fullscreen = {
+  timeline: [
+    {
+      type: jsPsychFullscreen,
+      message: '<p>To take part in the experiment, your browser must be in fullscreen mode. Exiting fullscreen mode will pause the experiment.<br><br>Please click the button below to enable fullscreen and continue.</p>',
+      fullscreen_mode: true,
+      on_finish: function(){
+        in_fullscreen = true;
       }
-    };
+    }
+  ],
+  conditional_function: function() {
+    // Skip if pilot
+    if (pilot === 'true') {
+      return false;
+    } 
+    return true;
+  }
+};
 
 /* 
   ===============================================================
@@ -630,7 +739,7 @@ var dot_trial = {
             <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
             <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
             <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
-            <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+          <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
           min: 1,
           max: 6,
           step: 1,
@@ -839,7 +948,6 @@ const save_data = {
  * (You can create separate timelines/conditions if desired.)
  */
 const condition_1_timeline = [
-  test_blocks,
   browser_check,
   enter_fullscreen,
   participant_info_paid,  // from info_sheets.js 
