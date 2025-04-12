@@ -134,6 +134,11 @@ var staircase = {
 
 
 
+// Calculate a percentage of the window width and height for the experimental canvas.
+const canvasWidth = window.innerWidth * 0.8;  // 80% of viewport width
+const canvasHeight = window.innerHeight * 0.8; // 80% of viewport height
+const sliderWidth = window.innerWidth * 0.8; // Use 80% of viewport width for the slider
+
 /* 
   ===============================================================
   =               UTILITY & DRAWING FUNCTIONS                   =
@@ -202,34 +207,52 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
  * @param {number} rightDots - The number of dots to draw in the right box.
  */
 
+function drawStimuli(c, dotsOn, leftboxFill, rightboxFill, leftDots, rightDots) {
+  var ctx = c.getContext('2d');
+  var canvasWidth = c.width;
+  var canvasHeight = c.height;
+  
+  // Define the box size relative to the canvas width.
+  var boxSize = canvasWidth * 0.2; // Adjust this factor if necessary.
+  
+  // Define the desired gap between the boxes.
+  var gap = canvasWidth * 0.06;  // For example, 6% of the canvas width.
+  
+  // Calculate the total width occupied by the two boxes and the gap.
+  var totalBoxesWidth = (2 * boxSize) + gap;
+  
+  // Calculate the starting x position so that the boxes are horizontally centered.
+  var startX = (canvasWidth - totalBoxesWidth) / 2;
+  
+  // Calculate the y coordinate to vertically center the boxes.
+  var yPos = (canvasHeight - boxSize) / 2;
 
-    function drawStimuli(c, dotsOn, leftboxFill, rightboxFill, leftDots, rightDots){
+  // Define the left and right box positions.
+  var leftBox = {
+    x: startX,
+    y: yPos,
+    size: boxSize
+  };
+  var rightBox = {
+    x: startX + boxSize + gap, // Box comes right after the left box plus the gap.
+    y: yPos,
+    size: boxSize
+  };
 
-      var ctx = c.getContext('2d');
-      var canvas = c;
+  // Draw the left box.
+  ctx.fillStyle = leftboxFill;
+  ctx.fillRect(leftBox.x, leftBox.y, leftBox.size, leftBox.size);
+  
+  // Draw the right box.
+  ctx.fillStyle = rightboxFill;
+  ctx.fillRect(rightBox.x, rightBox.y, rightBox.size, rightBox.size);
 
-
-  // Define positions and size for left and right boxes.
-      var leftBox = { x: 200, y: 250, size: 250 };
-      var rightBox = { x: 550, y: 250, size: 250 };
-
-        // Draw both boxes as black rectangles.
-      ctx.fillStyle = leftboxFill;
-      ctx.fillRect(leftBox.x, leftBox.y, leftBox.size, leftBox.size);
-      ctx.fillStyle = rightboxFill;
-      ctx.fillRect(rightBox.x, rightBox.y, rightBox.size, rightBox.size);
-
-
-      if(dotsOn){
-        // Draw the dots on each box.
-        // The dots are drawn using a grid of 25 rows × 25 columns (625 cells)
-        // so that dots will occupy distinct positions.
-        drawDots(ctx, leftBox.x, leftBox.y, leftBox.size, leftDots);
-        drawDots(ctx, rightBox.x, rightBox.y, rightBox.size, rightDots);
-
-      }
-
-    }
+  // If the dots should be drawn, draw them relative to their box coordinates.
+  if (dotsOn) {
+    drawDots(ctx, leftBox.x, leftBox.y, leftBox.size, leftDots);
+    drawDots(ctx, rightBox.x, rightBox.y, rightBox.size, rightDots);
+  }
+}
 
 
 
@@ -296,7 +319,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
          min: 1,
          max: 6,
          step: 1,
-         slider_width: 800,
+        slider_width: 800,
          require_movement: true,
          labels: ['Guessing', '', '', '', '', 'Certain'],
          button_label: "Submit",
@@ -328,7 +351,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
          min: 1,
          max: 6,
          step: 1,
-         slider_width: 800,
+        slider_width: 800,
          require_movement: false,
          labels: ['Guessing', '', '', '', '', 'Certain'],
          button_label: "Continue",
@@ -361,7 +384,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
          min: 1,
          max: 6,
          step: 1,
-         slider_width: 800,
+        slider_width: 800,
          slider_start: 1,
          require_movement: false,
          labels: ['Guessing', '', '', '', '', 'Certain'],
@@ -396,7 +419,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
          min: 1,
          max: 7,
          step: 1,
-         slider_width: 800,
+        slider_width: 800,
          slider_start: 4,
          require_movement: false,
          labels: ['Guessing', '', '', '', '', 'Certain'],
@@ -430,7 +453,7 @@ function drawDots(ctx, boxX, boxY, boxSize, numDots) {
          min: 1,
          max: 6,
          step: 1,
-         slider_width: 800,
+        slider_width: 800,
          require_movement: true,
          labels: ['Guessing', '', '', '', '', 'Certain'],
          button_label: "Submit",
@@ -594,7 +617,7 @@ var dot_trial = {
     // 2. Stimulus presentation (brief)
     {
       type: jsPsychCanvasKeyboardResponse,
-      canvas_size: [800, 1000],
+      canvas_size: [canvasHeight, canvasWidth],
       /**
        * Draws stimuli on a canvas with two boxes having different dot counts.
        * It calculates the baseline dot count, determines an increment based on a staircase procedure,
@@ -662,7 +685,7 @@ var dot_trial = {
     // 3. Stimulus Response trial: Participant responds which side had more dots.
     {
       type: jsPsychCanvasKeyboardResponse,
-      canvas_size: [800, 1000],
+      canvas_size: [canvasHeight, canvasWidth],
       /**
        * Draws the two boxes without dots for the response phase.
        * The participant's task is to respond by pressing either 'w' or 'e'.
@@ -692,7 +715,7 @@ var dot_trial = {
     // 4. Response highlight trial (Feedback display)
     {
       type: jsPsychCanvasKeyboardResponse,
-      canvas_size: [800, 1000],
+      canvas_size: [canvasHeight, canvasWidth],
       trial_duration: 500,
       /**
        * Provides visual feedback by drawing a blue outline (if no feedback is to be given)
@@ -743,7 +766,7 @@ var dot_trial = {
           min: 1,
           max: 6,
           step: 1,
-          slider_width: 800,
+         slider_width: 800,
           require_movement: true,
           labels: ['Guessing', '', '', '', '', 'Certain'],
           button_label: "Submit",
