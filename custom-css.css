@@ -2,9 +2,17 @@
  * Container margin for slider elements with class "conf_rating".
  * This sets the top margin to 0%.
  */
+
+
 .conf_rating {
-  margin-top: 15%;
+  position: fixed;        /* Fixes the element relative to the viewport */
+  top: 50%;               /* Positions the top at 50% of viewport height */
+  left: 50%;              /* Optionally center horizontally */
+  transform: translate(-50%, -50%); /* Offsets the element's own height/width */
+  width: 100%;            /* Adjust or remove if not required */
+  margin: 0;              /* Remove any margin that might interfere */
 }
+
 
 /* 
  * Combined slider track styles for WebKit-based browsers for both the 
