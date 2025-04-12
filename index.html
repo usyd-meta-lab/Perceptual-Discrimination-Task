@@ -113,8 +113,8 @@ const task_time = 30; // (minutes) for the PIS
 
 
 // Task parameters: 
-let no_trials = 2;         // Number of trials in each main block
-let no_practice_trials = 2;// Number of practice trials
+let no_trials = 42;         // Number of trials in each main block
+let no_practice_trials = 25;// Number of practice trials
 let total_blocks = 5;       // Total number of blocks (only used for instructions)
 let dots_diff = 4.25;       // Starting difficulty (log-space)
 let in_fullscreen = true;   // Tracks whether participant is in fullscreen
@@ -974,7 +974,6 @@ const save_data = {
  * (You can create separate timelines/conditions if desired.)
  */
 const condition_1_timeline = [
-  test_blocks,
   browser_check,
   enter_fullscreen,
   participant_info_paid,  // from info_sheets.js 
