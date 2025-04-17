@@ -44,6 +44,7 @@
 .conf_rating .jspsych-html-slider-response-container #jspsych-html-slider-response-response::-webkit-slider-thumb,
 .conf_instructions .jspsych-html-slider-response-container #jspsych-html-slider-response-response::-webkit-slider-thumb {
   -webkit-appearance: none;
+  visibility: hidden;
   appearance: none;
   width: 30px;
   height: 30px;
@@ -51,6 +52,24 @@
   background: #F2F1F1;
   border: 1px solid #999999;
 }
+
+
+
+/* 
+ * Same as previous, but changes the thumb to visible after the slider is clicked on
+ */
+.conf_rating .jspsych-html-slider-response-container #jspsych-html-slider-response-response:focus::-webkit-slider-thumb,
+.conf_instructions .jspsych-html-slider-response-container #jspsych-html-slider-response-response:active::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  visibility: visible;
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -1.5px;
+  background: #F2F1F1;
+  border: 1px solid #999999;
+}
+
 
 /* 
  * Styling for instruction slider segments with class "conf_ins".
@@ -125,3 +144,6 @@
 .survey {
   text-align: left;
 }
+
+
+

@@ -117,7 +117,7 @@ let no_trials = 42;         // Number of trials in each main block
 let no_practice_trials = 25;// Number of practice trials
 let total_blocks = 5;       // Total number of blocks (only used for instructions)
 let dots_diff = 4.25;       // Starting difficulty (log-space)
-let in_fullscreen = true;   // Tracks whether participant is in fullscreen
+let in_fullscreen = false;   // Tracks whether participant is in fullscreen (set to false to begin with)
 let provide_feedback;       // Tracks feedback mode (true during practice, false in test blocks)
 let trialnum = 1;           // Trial counter
 let blocknum = 1;           // Block counter
@@ -591,12 +591,13 @@ const enter_fullscreen = {
  * Defines the dot trial timeline for the task.
  *
  * This timeline includes:
- *   1. A fixation cross trial.
- *   2. A brief stimulus presentation trial that shows two boxes with dots.
- *   3. A stimulus response trial where the participant indicates which side has more dots.
- *   4. A feedback trial that highlights the selected response with an outline (blue, green, or red).
- *   5. A confidence rating trial where participants rate how confident they were in their response (conditionally displayed).
- *   6. A summary trial that logs the trial data and updates the staircase parameters.
+ *   1. Check that the user is in fullscreen mode
+ *   2. A fixation cross trial.
+ *   3. A brief stimulus presentation trial that shows two boxes with dots.
+ *   4. A stimulus response trial where the participant indicates which side has more dots.
+ *   5. A feedback trial that highlights the selected response with an outline (blue, green, or red).
+ *   6. A confidence rating trial where participants rate how confident they were in their response (conditionally displayed).
+ *   7. A summary trial that logs the trial data and updates the staircase parameters.
  *
  * External variables referenced in this timeline include:
  *   - `staircase`: An object that holds the current staircase information including `current_log` and `consecutive_correct`.
@@ -606,7 +607,29 @@ const enter_fullscreen = {
  */
 var dot_trial = {
   timeline: [
-    // 1. Fixation cross trial
+
+    // 1. Check Fullscreen
+    {
+      timeline: [
+
+        {type: jsPsychFullscreen,
+          message: '<p>You need to be in fullscreen mode to continue the experiment! <br></br> Please click the button below to enter fullscreen mode.<br></br><p>',
+          fullscreen_mode: true,
+          on_finish: function(){
+            in_fullscreen = true;
+          }
+        }
+      ],
+      conditional_function: function(){
+        if(in_fullscreen === true){
+          return false;
+        } else {
+          return true;
+        }
+      }
+    },
+
+    // 2. Fixation cross trial
     {
       type: jsPsychHtmlKeyboardResponse,
       stimulus: '<p style="font-size: 70pt;">+</p>',
@@ -614,7 +637,7 @@ var dot_trial = {
       trial_duration: 1000
     },
 
-    // 2. Stimulus presentation (brief)
+    // 3. Stimulus presentation (brief)
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [canvasHeight, canvasWidth],
@@ -633,14 +656,14 @@ var dot_trial = {
         const increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
         const highCount = baseline + increment;
 
-   
+
 
         // Randomly assign the higher dot count to the left or right box based on timeline (to ensure balance).
         let leftDots, rightDots;
         if(jsPsych.evaluateTimelineVariable('target_left')){
           leftDots = highCount;
           rightDots = baseline;
-          } else {
+        } else {
           leftDots = baseline;
           rightDots = highCount;
         }
@@ -685,7 +708,7 @@ var dot_trial = {
       }
     },
 
-    // 3. Stimulus Response trial: Participant responds which side had more dots.
+    // 4. Stimulus Response trial: Participant responds which side had more dots.
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [canvasHeight, canvasWidth],
@@ -701,7 +724,8 @@ var dot_trial = {
       },
       choices: ['w', 'e'],
       prompt: function(){
-        if(phase == "Practice") {return '<p style = "position: absolute; margin-left: 27%; margin-top: 0%;" >Press W if the box on the left had more dots.<br>Press E if the box on the right had more dots.</p>'} else {return ''}
+        var startX = (canvasWidth - 380) / 2;
+        if(phase == "Practice") {return `<p style = "position: absolute; margin-left: ${startX}px; margin-top: 0%;" >Press W if the box on the left had more dots.<br>Press E if the box on the right had more dots.</p>`} else {return ''}
       },
       on_finish: function(data) {
         data.trial_type = "Stimulus Response";
@@ -718,7 +742,7 @@ var dot_trial = {
       }
     },
 
-    // 4. Response highlight trial (Feedback display)
+    // 5. Response highlight trial (Feedback display)
     {
       type: jsPsychCanvasKeyboardResponse,
       canvas_size: [canvasHeight, canvasWidth],
@@ -758,7 +782,7 @@ var dot_trial = {
       }
     },
 
-    // 5. Confidence Rating trial (conditional)
+    // 6. Confidence Rating trial (conditional)
     {
       timeline: [
         {
@@ -789,6 +813,15 @@ var dot_trial = {
             document.getElementById("conf3").style.left = marLeft;
             document.getElementById("conf4").style.left = marLeft;
             document.getElementById("conf5").style.left = marLeft;
+
+             // Now reveal the thumb when the slider is used
+            const wrapper = document.querySelector('.conf_rating');
+            wrapper.addEventListener('pointerdown', function handleFirstClick() {
+              wrapper.style.setProperty('--thumb-visibility', 'visible');
+              wrapper.removeEventListener('pointerdown', handleFirstClick);
+            });
+
+
           }
         }
       ],
@@ -803,7 +836,7 @@ var dot_trial = {
       }
     },
 
-    // 6. Summary trial: Stores data and updates the staircase.
+    // 7. Summary trial: Stores data and updates the staircase.
     {
       type: jsPsychCallFunction,
       /**
@@ -839,7 +872,7 @@ var dot_trial = {
           staircase.consecutive_correct = 0;
         }
 
-        console.log("Trial:", trialnum, "| Correct:", correct, "| Updated log:", staircase.current_log);
+
       },
       on_finish: function(data) {
         // Log the reaction time and associate the stimulus response data with the summary trial.
@@ -870,7 +903,7 @@ var dot_trial = {
     {target_left: true},
     {target_left: false},
   ],
-    randomize_order: true
+  randomize_order: true
 };
 
 
