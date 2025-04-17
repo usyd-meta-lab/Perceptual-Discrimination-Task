@@ -847,7 +847,8 @@ var dot_trial = {
        * and logs relevant trial data. The step size decreases with increasing trial numbers.
        */
       func: function() {
-        // Retrieve the last stimulus response trial.
+        // Retrieve the last stimulus response trial & increment
+        const increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
         const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
         const correct = lastResp.correct;
 
@@ -869,7 +870,7 @@ var dot_trial = {
             staircase.current_log -= step_size;
             staircase.consecutive_correct = 0; // Reset counter.
           }
-        } else {
+        } else if(increment < 312){
           // Incorrect response: make the task easier.
           staircase.current_log += step_size;
           staircase.consecutive_correct = 0;
