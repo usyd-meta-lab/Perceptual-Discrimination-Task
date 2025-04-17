@@ -606,6 +606,9 @@ const enter_fullscreen = {
  *   - `provide_feedback`: A flag that indicates whether feedback should be provided.
  */
 var dot_trial = {
+    data: function(){
+    return {trialnum: trialnum, blocknum: blocknum}
+  },
   timeline: [
 
     // 1. Check Fullscreen
