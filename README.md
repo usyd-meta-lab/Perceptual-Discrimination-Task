@@ -38,7 +38,7 @@ The following table lists the key task parameters defined in the code:
 |-----------------------|--------------------------------------------------------------------------------------|-----------------------------|
 | `no_trials`           | Number of trials in each main block                                                  | 42                          |
 | `no_practice_trials`  | Number of practice trials                                                            | 25                          |
-| `total_blocks`        | Total number of blocks (only used for instructions)                                  | 5                           |
+| `total_blocks`        | Total number of blocks                                   | 5                           |
 | `dots_diff`           | Starting difficulty (log-space), influencing the dot difference                      | 4.25                        |
 | `in_fullscreen`       | Tracks whether participant is in fullscreen. Set to false to begin with             | `false`                      |
 | `provide_feedback`    | Tracks feedback mode (`true` during practice, `false` during test blocks)            | _Undefined initially_       |
