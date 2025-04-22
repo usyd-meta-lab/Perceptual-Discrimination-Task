@@ -78,7 +78,7 @@ usyd-meta-lab/
   Contains the entire experiment script including initialization, instructions, task procedure, and data saving routines.
 
 - **info_sheets.js:**  
-  Contains external variables and functions for handling participant info and debrief screens, and any other details required by the experiment. It is loaded externally from http://usyd-meta-lab.github.io/files so the most recent documents are automatically used
+  Contains external variables and functions for handling participant info and debrief screens, and any other details required by the experiment. It is loaded externally from http://usyd-meta-lab.github.io/files so the most recent documents are automatically used.
 
 ## Dependencies
 
