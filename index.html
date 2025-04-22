@@ -656,7 +656,7 @@ var dot_trial = {
         // Set up the dot counts.
         const baseline = 313;  // half-filled box (313 dots)
         // Choose a random increment between 1 and 70 scaled by an exponential function of the staircase log value.
-        const increment = Math.round(70 * Math.exp(staircase.current_log - 4.2));
+        const increment = Math.round(Math.exp(staircase.current_log));
         const highCount = baseline + increment;
 
 
