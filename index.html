@@ -554,21 +554,21 @@ const new_block = {
   ===============================================================
 */
 
-// Check that participant is using Chrome or Firefox on a desktop
+// Check that participant is using Chrome or Firefox on a desktop. Note that previously excluded Safari but it seems to be working
 const browser_check = {
   timeline: [
     {
       type: jsPsychBrowserCheck,
       inclusion_function: (data) => {
-        // Accept only if browser is Chrome or Firefox and not on mobile
-        return ['chrome', 'firefox'].includes(data.browser) && data.mobile === false;
+        // Accept only if browser is Chrome, Safari, or Firefox and not on mobile
+        return ['chrome', 'firefox', 'safari'].includes(data.browser) && data.mobile === false;
       },
       exclusion_message: (data) => {
         aborted = true;
         if (data.mobile) {
           return '<p>You must use a desktop/laptop computer to participate in this experiment.</p>';
-        } else if (!['chrome','firefox'].includes(data.browser)) {
-          return '<p>You must use Chrome or Firefox as your browser to complete this experiment.</p>';
+        } else if (!['chrome','firefox', 'safari'].includes(data.browser)) {
+          return '<p>You must use Chrome, Safari, or Firefox as your browser to complete this experiment.</p>';
         }
       }
     }
