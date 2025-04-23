@@ -775,7 +775,7 @@ var dot_trial = {
         // Highlight the box based on the response key.
         if (lastResponse === "e") {
           return drawStimuli(c, false, "black", feedbackColor);
-        } else {
+        } else if(lastResponse === "w") {
           return drawStimuli(c, false, feedbackColor, "black");
         }
       },
