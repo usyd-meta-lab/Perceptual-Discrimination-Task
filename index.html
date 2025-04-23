@@ -808,6 +808,13 @@ var dot_trial = {
           },
           css_classes: ["conf_rating"],
           on_load: function() {
+
+            const wrapper = document.querySelector('.conf_rating');
+
+              // Reset thumb to hidden at the start of the trial
+              wrapper.style.setProperty('--thumb-visibility', 'hidden');
+
+
             // Center the slider by calculating the left margin.
             const w = window.innerWidth;
             const marLeft = (w - 800) / 2 + "px";
@@ -818,7 +825,6 @@ var dot_trial = {
             document.getElementById("conf5").style.left = marLeft;
 
              // Now reveal the thumb when the slider is used
-            const wrapper = document.querySelector('.conf_rating');
             wrapper.addEventListener('pointerdown', function handleFirstClick() {
               wrapper.style.setProperty('--thumb-visibility', 'visible');
               wrapper.removeEventListener('pointerdown', handleFirstClick);
