@@ -1,0 +1,253 @@
+{
+     "@context" : "http://schema.org/",
+     "@type" : "Dataset",
+     "name" : "Psych-DS 'Infomative Mistakes' Dataset",
+     "description" : "This is a minimal example of a dataset which is several key mistakes away from being a valid Psych-DS dataset.",
+    "variableMeasured": [
+    {
+      "@type": "PropertyValue",
+      "name": "rt",
+      "description": "Response time from stimulus onset to button press",
+      "unitText": "milliseconds",
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "condition",
+      "description": "Experimental condition code (numeric placeholder for between-subjects manipulation)",
+      "valuePattern": "0|1"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "trial_type",
+      "description": "Type of trial (e.g., 'Stimulus Response', 'Survey Likert')",
+      "valuePattern": "Stimulus Response|Survey Likert|.*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "stimulus",
+      "description": "HTML string or symbol presented as the stimulus",
+      "valuePattern": "<.*?>"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "response",
+      "description": "Participant's keypress or selection response",
+      "valuePattern": "[a-zA-Z0-9]"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "leftDots",
+      "description": "Number of dots on the left side of the display",
+      "unitText": "count",
+      "minValue": 313,
+      "maxValue": 625
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "rightDots",
+      "description": "Number of dots on the right side of the display",
+      "unitText": "count",
+      "minValue": 313,
+      "maxValue": 625
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "dot_difference",
+      "description": "Absolute difference in dot count between left and right sides",
+      "unitText": "count",
+      "minValue": 1,
+      "maxValue": 312
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "correct",
+      "description": "Indicates whether the participant's response was correct (1) or incorrect (0)",
+      "valuePattern": "0|1"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "confidence",
+      "description": "Confidence rating provided by the participant after making a decision",
+      "unitText": "ordinal scale (1–6)",
+      "minValue": 1,
+      "maxValue": 6
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "slider_start",
+      "description": "Theoretical initial position of the confidence slider (though not displayed to participants)",
+      "unitText": "percent (0–100)",
+      "minValue": 1,
+      "maxValue": 50
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "phase",
+      "description": "Experiment phase label (e.g., 'Practice', 'Test')",
+      "valuePattern": "Practice|Test"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "correct_key",
+      "description": "Key that corresponds to the correct answer on the given trial",
+      "valuePattern": "w|e"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "target_left",
+      "description": "Whether the target stimulus was on the left side",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "time_elapsed",
+      "description": "Elapsed time in milliseconds since the start of the experiment",
+      "unitText": "milliseconds",
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "trial_index",
+      "description": "Index of the trial in the full timeline",
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "browser",
+      "description": "Web browser used by participant",
+      "valuePattern": "chrome|firefox|safari|edge|.*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "browser_version",
+      "description": "Version of the web browser",
+      "valuePattern": "\\d+(\\.\\d+)*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "os",
+      "description": "Operating system of the participant's device",
+      "valuePattern": "Mac OS|Windows|Linux|.*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "mobile",
+      "description": "Indicates whether the device was a mobile device",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "fullscreen",
+      "description": "Indicates whether the experiment was conducted in fullscreen mode",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "webcam",
+      "description": "Indicates whether webcam access was granted",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "microphone",
+      "description": "Indicates whether microphone access was granted",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "webaudio",
+      "description": "Indicates whether web audio was available",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "width",
+      "description": "Width of the browser window in pixels",
+      "unitText": "pixels"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "height",
+      "description": "Height of the browser window in pixels",
+      "unitText": "pixels"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "vsync_rate",
+      "description": "Vertical sync rate of the display in Hz",
+      "unitText": "Hz",
+      "minValue": 0
+    },
+     {
+      "@type": "PropertyValue",
+      "name": "plugin_version",
+      "description": "Version number of the plugin used for the trial",
+      "valuePattern": "\\d+(\\.\\d+)*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "participant_id",
+      "description": "Anonymized unique participant identifier",
+      "valuePattern": ".*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "Source",
+      "description": "Source or platform of participant recruitment (e.g., Prolific, SONA)",
+      "valuePattern": ".*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "success",
+      "description": "Indicates success status of applying full screen",
+      "valuePattern": "True|False"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "view_history",
+      "description": "A record of the views/screens presented to the participant during the instructions",
+      "valuePattern": ".*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "baseline",
+      "description": "The baseline number of dots used in the non-target stimuli",
+      "unitText": "dots",
+      "value": 313
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "increment",
+      "description": "The dot difference between the target and non-target stimuli",
+      "unitText": "unitless",
+      "valuePattern": "-?\\d+(\\.\\d+)?"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "current_log",
+      "description": "The current staircase value in log-space",
+      "valuePattern": ".*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "value",
+      "description": "The return value of the jsPsych call-function. Typically blank",
+      "valuePattern": ".*"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "trialnum",
+      "description": "Index of the trial within the current block",
+      "unitText": "integer",
+      "minValue": 1
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "blocknum",
+      "description": "Index of the block within the experiment",
+      "unitText": "integer",
+      "minValue": 1
+    }
+]
+}
