@@ -336,6 +336,14 @@ const conf_instruc = {
       document.getElementById("conf3").style.left = marLeft;
       document.getElementById("conf4").style.left = marLeft;
       document.getElementById("conf5").style.left = marLeft;
+
+       // Now reveal the thumb when the slider is used
+      const wrapper = document.querySelector('.conf_rating');
+      wrapper.addEventListener('pointerdown', function handleFirstClick() {
+        wrapper.style.setProperty('--thumb-visibility', 'visible');
+        wrapper.removeEventListener('pointerdown', handleFirstClick);
+      });
+      
     }
   },
 
@@ -462,6 +470,14 @@ on_load: function() {
 },
 css_classes: ["conf_rating"],
 on_load: function() {
+
+
+  const wrapper = document.querySelector('.conf_rating');
+
+              // Reset thumb to hidden at the start of the trial
+  wrapper.style.setProperty('--thumb-visibility', 'hidden');
+
+
             // Center the slider by calculating the left margin.
   const w = window.innerWidth;
   const marLeft = (w - 800) / 2 + "px";
@@ -470,6 +486,13 @@ on_load: function() {
   document.getElementById("conf3").style.left = marLeft;
   document.getElementById("conf4").style.left = marLeft;
   document.getElementById("conf5").style.left = marLeft;
+
+             // Now reveal the thumb when the slider is used
+  wrapper.addEventListener('pointerdown', function handleFirstClick() {
+    wrapper.style.setProperty('--thumb-visibility', 'visible');
+    wrapper.removeEventListener('pointerdown', handleFirstClick);
+  });
+
 }
 },
 
@@ -606,7 +629,7 @@ const enter_fullscreen = {
  *   - `provide_feedback`: A flag that indicates whether feedback should be provided.
  */
 var dot_trial = {
-    data: function(){
+  data: function(){
     return {trialnum: trialnum, blocknum: blocknum}
   },
   timeline: [
@@ -812,7 +835,7 @@ var dot_trial = {
             const wrapper = document.querySelector('.conf_rating');
 
               // Reset thumb to hidden at the start of the trial
-              wrapper.style.setProperty('--thumb-visibility', 'hidden');
+            wrapper.style.setProperty('--thumb-visibility', 'hidden');
 
 
             // Center the slider by calculating the left margin.
@@ -879,7 +902,7 @@ var dot_trial = {
           // Incorrect response: make the task easier.
           staircase.current_log += step_size;
           if(staircase.current_log > 5.74){staircase.current_log = 5.74}
-          staircase.consecutive_correct = 0;
+            staircase.consecutive_correct = 0;
         }
 
 
