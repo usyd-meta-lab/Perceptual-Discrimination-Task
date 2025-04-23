@@ -755,6 +755,9 @@ var dot_trial = {
       },
       on_finish: function(data) {
         data.trial_type = "Stimulus Response";
+        
+        // Save response as lower case even if it was in uppercase
+        data.response = data.response.toLowerCase();
 
         // Score the response accuracy by comparing the key pressed to the correct key.
         if (data.response == window.current_trial_dots.correct_key) {
