@@ -1,0 +1,812 @@
+let phase = null;           // Tracks current phase: "Practice" or "Test"
+
+
+   // The staircase is stored in log-space.
+    // Starting value 4.2 corresponds to an increment of ~70 dots.
+var staircase = {
+  current_log: dots_diff,
+  consecutive_correct: 0
+};
+
+
+
+// Calculate a percentage of the window width and height for the experimental canvas.
+const canvasWidth = window.innerWidth * 0.8;  // 80% of viewport width
+const canvasHeight = window.innerHeight * 0.8; // 80% of viewport height
+const sliderWidth = window.innerWidth * 0.8; // Use 80% of viewport width for the slider
+
+/* 
+  ===============================================================
+  =               UTILITY & DRAWING FUNCTIONS                   =
+  ===============================================================
+*/
+
+
+
+/**
+ * Draws a specified number of random dots within a square area on a canvas.
+ *
+ * The function divides the given square (starting at the top-left corner defined by
+ * boxX and boxY, with a total width/height defined by boxSize) into a grid of 25 rows
+ * and 25 columns (625 positions). It then creates an array of all potential cell positions within the grid,
+ * shuffles these positions, selects the first numDots positions, and draws a white filled circle 
+ * (dot) at the center of each selected cell.
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context used for drawing.
+ * @param {number} boxX - The x-coordinate of the top-left corner of the square area.
+ * @param {number} boxY - The y-coordinate of the top-left corner of the square area.
+ * @param {number} boxSize - The width and height of the square area.
+ * @param {number} numDots - The number of dots to draw.
+ */
+
+
+function drawDots(ctx, boxX, boxY, boxSize, numDots) {
+      var gridSize = 25;              // 25 columns and 25 rows
+      var cellSize = boxSize / gridSize; // Each cell's width (and height)
+      var positions = [];
+      // Create an array of all possible cell positions.
+      for (var i = 0; i < gridSize; i++){
+        for (var j = 0; j < gridSize; j++){
+          positions.push({x: boxX + j * cellSize, y: boxY + i * cellSize});
+        }
+      }
+      // Shuffle the array to randomize the positions.
+      positions = jsPsych.randomization.repeat(positions, 1);
+      // Select the first numDots positions.
+      var selected = positions.slice(0, numDots);
+      // Draw a white filled circle (dot) at the center of each selected cell.
+      ctx.fillStyle = 'white';
+      selected.forEach(function(pos) {
+        var centerX = pos.x + cellSize / 2;
+        var centerY = pos.y + cellSize / 2;
+        var radius = cellSize / 3; // Adjust the radius as needed.
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+    }
+
+
+
+/**
+ * Draws stimuli on a canvas element by rendering two boxes and, optionally, drawing dots within them.
+ *
+ * The function creates two boxes—one on the left and one on the right—with predetermined positions
+ * and sizes. It fills each box with the specified colors. If the `dotsOn` flag is true, the function
+ * draws a specified number of dots within each box using a grid-based approach (via the drawDots function).
+ *
+ * @param {HTMLCanvasElement} c - The canvas element on which the stimuli will be drawn.
+ * @param {boolean} dotsOn - Determines whether to draw dots inside the boxes. If true, dots are drawn.
+ * @param {string} leftboxFill - The fill color for the left box (e.g., "#000000" for black).
+ * @param {string} rightboxFill - The fill color for the right box.
+ * @param {number} leftDots - The number of dots to draw in the left box.
+ * @param {number} rightDots - The number of dots to draw in the right box.
+ */
+
+    function drawStimuli(c, dotsOn, leftboxFill, rightboxFill, leftDots, rightDots) {
+      var ctx = c.getContext('2d');
+      var canvasWidth = c.width;
+      var canvasHeight = c.height;
+
+  // Define the box size relative to the canvas width.
+  var boxSize = canvasWidth * 0.2; // Adjust this factor if necessary.
+  
+  // Define the desired gap between the boxes.
+  var gap = canvasWidth * 0.06;  // For example, 6% of the canvas width.
+  
+  // Calculate the total width occupied by the two boxes and the gap.
+  var totalBoxesWidth = (2 * boxSize) + gap;
+  
+  // Calculate the starting x position so that the boxes are horizontally centered.
+  var startX = (canvasWidth - totalBoxesWidth) / 2;
+  
+  // Calculate the y coordinate to vertically center the boxes.
+  var yPos = (canvasHeight - boxSize) / 2;
+
+  // Define the left and right box positions.
+  var leftBox = {
+    x: startX,
+    y: yPos,
+    size: boxSize
+  };
+  var rightBox = {
+    x: startX + boxSize + gap, // Box comes right after the left box plus the gap.
+    y: yPos,
+    size: boxSize
+  };
+
+  // Draw the left box.
+  ctx.fillStyle = leftboxFill;
+  ctx.fillRect(leftBox.x, leftBox.y, leftBox.size, leftBox.size);
+  
+  // Draw the right box.
+  ctx.fillStyle = rightboxFill;
+  ctx.fillRect(rightBox.x, rightBox.y, rightBox.size, rightBox.size);
+
+  // If the dots should be drawn, draw them relative to their box coordinates.
+  if (dotsOn) {
+    drawDots(ctx, leftBox.x, leftBox.y, leftBox.size, leftDots);
+    drawDots(ctx, rightBox.x, rightBox.y, rightBox.size, rightDots);
+  }
+}
+
+
+
+
+
+
+
+/* 
+  ===============================================================
+  =                        INSTRUCTIONS                          =
+  ===============================================================
+*/
+
+/**
+ * Instructions displayed before practice trials begin.
+ * Will depend on whether confidence ratings are turned on or off.
+ */
+const instructions = {
+  type: jsPsychInstructions,
+  pages: [
+    `<h2>Welcome to the task!</h2>
+         <p class="instructions">In this task, you will judge which of two images contains more dots, then rate your confidence in your judgment.</p>
+         <p class="instructions">A black cross will appear first; focus on it. Two boxes with a certain number of white dots will flash. Then, choose which box had more dots.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>
+         <p class="instructions">You will then rate your confidence in that judgment using a scale.</p>
+    <p class="instructions">Use the entire scale from &apos;Guessing&apos; to &apos;Certain.&apos;</p>`,
+
+    `<p class="instructions">Let&#39;s do some practice trials. Respond only after the dots have disappeared.</p>
+         <p class="instructions">During practice, you will see feedback indicating <font color="green">correct</font> or <font color="red">incorrect</font> judgments.</p>
+    <p class="instructions">No confidence rating is needed during these practice trials.</p>`
+  ],
+  show_clickable_nav: true
+};
+
+/**
+ * Instructions after practice finishes (explaining that no feedback will be given in the real task).
+ */
+const practice_end = {
+  type: jsPsychInstructions,
+  pages:  [
+    `<p class="instructions">In the real task, you will not see accuracy feedback. Instead, the box you choose will be outlined in <font color="blue">blue</font>.</p>
+    <p class="instructions">You will then be asked to rate your confidence on a scale, which we will explain next.</p>`
+  ],
+  show_clickable_nav: true
+};
+
+/**
+ * Instructions about confidence scale appear only if confidence ratings are on.
+ */
+
+const conf_instruc = {
+  timeline: [
+        // First Screen
+    {
+     type: jsPsychHtmlSliderResponse,
+     stimulus: `A rating scale as shown below is used throughout the task. 
+        You will select any point with your mouse.<br>Choose any point on the 
+          scale and click &apos;Submit&apos; to continue.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+     <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+     min: 1,
+     max: 6,
+     step: 1,
+     slider_width: 800,
+     require_movement: true,
+     labels: ['Guessing', '', '', '', '', 'Certain'],
+     button_label: "Submit",
+     on_finish: function(data) {
+      data.trial_type = "Confidence Rating";
+    },
+    css_classes: ["conf_rating"],
+    on_load: function() {
+            // Center the slider by calculating the left margin.
+      const w = window.innerWidth;
+      const marLeft = (w - 800) / 2 + "px";
+      document.getElementById("conf1").style.left = marLeft;
+      document.getElementById("conf2").style.left = marLeft;
+      document.getElementById("conf3").style.left = marLeft;
+      document.getElementById("conf4").style.left = marLeft;
+      document.getElementById("conf5").style.left = marLeft;
+
+       // Now reveal the thumb when the slider is used
+      const wrapper = document.querySelector('.conf_rating');
+      wrapper.addEventListener('pointerdown', function handleFirstClick() {
+        wrapper.style.setProperty('--thumb-visibility', 'visible');
+        wrapper.removeEventListener('pointerdown', handleFirstClick);
+      });
+      
+    }
+  },
+
+       // Second Screen
+  {
+   type: jsPsychHtmlSliderResponse,
+   stimulus: `During the task, if you are <strong>very sure</strong> that you made the correct judgement, you should respond <strong>&apos;Certain&apos;</strong><br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+   <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+   min: 1,
+   max: 6,
+   step: 1,
+   slider_width: 800,
+   require_movement: false,
+   labels: ['Guessing', '', '', '', '', 'Certain'],
+   button_label: "Continue",
+   on_finish: function(data) {
+    data.trial_type = "Confidence Rating";
+  },
+  css_classes: ["conf_rating"],
+  on_load: function() {
+    document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+    const w = window.innerWidth;
+    const marLeft = (w - 800) / 2 + "px";
+    document.getElementById("conf1").style.left = marLeft;
+    document.getElementById("conf2").style.left = marLeft;
+    document.getElementById("conf3").style.left = marLeft;
+    document.getElementById("conf4").style.left = marLeft;
+    document.getElementById("conf5").style.left = marLeft;
+  }
+},
+
+// Third Screen
+{
+ type: jsPsychHtmlSliderResponse,
+ stimulus: `If you are <strong>very unsure</strong> you made the correct judgement, you should respond <strong>&apos;Guessing&apos;</strong><br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+ <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+ min: 1,
+ max: 6,
+ step: 1,
+ slider_width: 800,
+ slider_start: 1,
+ require_movement: false,
+ labels: ['Guessing', '', '', '', '', 'Certain'],
+ button_label: "Continue",
+ on_finish: function(data) {
+  data.trial_type = "Confidence Rating";
+},
+css_classes: ["conf_rating"],
+on_load: function() {
+  document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+  const w = window.innerWidth;
+  const marLeft = (w - 800) / 2 + "px";
+  document.getElementById("conf1").style.left = marLeft;
+  document.getElementById("conf2").style.left = marLeft;
+  document.getElementById("conf3").style.left = marLeft;
+  document.getElementById("conf4").style.left = marLeft;
+  document.getElementById("conf5").style.left = marLeft;
+}
+},
+
+
+// Fourth Screen
+{
+ type: jsPsychHtmlSliderResponse,
+ stimulus: `If you are <strong>somewhat sure</strong> about being correct, you should select a rating between the two descriptions.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+ <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+ min: 1,
+ max: 7,
+ step: 1,
+ slider_width: 800,
+ slider_start: 4,
+ require_movement: false,
+ labels: ['Guessing', '', '', '', '', 'Certain'],
+ button_label: "Continue",
+ on_finish: function(data) {
+  data.trial_type = "Confidence Rating";
+},
+css_classes: ["conf_rating"],
+on_load: function() {
+  document.querySelector('input[type=range]').disabled = true;
+            // Center the slider by calculating the left margin.
+  const w = window.innerWidth;
+  const marLeft = (w - 800) / 2 + "px";
+  document.getElementById("conf1").style.left = marLeft;
+  document.getElementById("conf2").style.left = marLeft;
+  document.getElementById("conf3").style.left = marLeft;
+  document.getElementById("conf4").style.left = marLeft;
+  document.getElementById("conf5").style.left = marLeft;
+}
+},
+
+       // Fifth Screen
+{
+ type: jsPsychHtmlSliderResponse,
+ stimulus: `If you understand how to use and take advantage of the whole rating scale, choose any point on the rating scale and click &apos;Submit&apos; to continue.<br><br>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+ <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+ min: 1,
+ max: 6,
+ step: 1,
+ slider_width: 800,
+ require_movement: true,
+ labels: ['Guessing', '', '', '', '', 'Certain'],
+ button_label: "Submit",
+ on_finish: function(data) {
+  data.trial_type = "Confidence Rating";
+},
+css_classes: ["conf_rating"],
+on_load: function() {
+
+
+  const wrapper = document.querySelector('.conf_rating');
+
+              // Reset thumb to hidden at the start of the trial
+  wrapper.style.setProperty('--thumb-visibility', 'hidden');
+
+
+            // Center the slider by calculating the left margin.
+  const w = window.innerWidth;
+  const marLeft = (w - 800) / 2 + "px";
+  document.getElementById("conf1").style.left = marLeft;
+  document.getElementById("conf2").style.left = marLeft;
+  document.getElementById("conf3").style.left = marLeft;
+  document.getElementById("conf4").style.left = marLeft;
+  document.getElementById("conf5").style.left = marLeft;
+
+             // Now reveal the thumb when the slider is used
+  wrapper.addEventListener('pointerdown', function handleFirstClick() {
+    wrapper.style.setProperty('--thumb-visibility', 'visible');
+    wrapper.removeEventListener('pointerdown', handleFirstClick);
+  });
+
+}
+},
+
+]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Instructions displayed before starting the main (test) blocks.
+ */
+const test_start = {
+  type: jsPsychInstructions,
+  pages: [
+    `<p class="instructions">The task is divided into ${total_blocks} blocks of ${no_trials} trials. 
+          You can take short breaks between blocks.</p>
+         <p class="instructions">There are no time limits on your responses or on your confidence ratings.</p>
+         <p class="instructions"><strong>Press W</strong> if the <strong>left</strong> box had more dots, 
+    or <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+  ],
+  show_clickable_nav: true
+};
+
+/**
+ * Intermediate instruction that appears between blocks in the main task,
+ * reminding participants that they can take a break.
+ */
+const new_block = {
+  type: jsPsychInstructions,
+  pages: function() {
+    return [
+      `<p class="instructions">Block ${blocknum} of ${total_blocks}.<br><br>
+       You can pause for a break now.<br><br>
+       Remember:<br><strong>W</strong> if the <strong>left</strong> box had more dots,<br>
+      <strong>E</strong> if the <strong>right</strong> box had more dots.</p>`
+    ];
+  },
+  show_clickable_nav: true,
+  on_finish: function() {
+    blocknum++;
+  }
+};
+
+
+
+
+/* 
+  ===============================================================
+  =                     DOT TRIAL PROCEDURE                      =
+  ===============================================================
+*/
+
+
+/**
+ * Defines the dot trial timeline for the task.
+ *
+ * This timeline includes:
+ *   1. Check that the user is in fullscreen mode
+ *   2. A fixation cross trial.
+ *   3. A brief stimulus presentation trial that shows two boxes with dots.
+ *   4. A stimulus response trial where the participant indicates which side has more dots.
+ *   5. A feedback trial that highlights the selected response with an outline (blue, green, or red).
+ *   6. A confidence rating trial where participants rate how confident they were in their response (conditionally displayed).
+ *   7. A summary trial that logs the trial data and updates the staircase parameters.
+ *
+ * External variables referenced in this timeline include:
+ *   - `staircase`: An object that holds the current staircase information including `current_log` and `consecutive_correct`.
+ *   - `phase`: A variable indicating the current phase (e.g., "Test" or "Practice").
+ *   - `trialnum`: A counter for the current trial number.
+ *   - `provide_feedback`: A flag that indicates whether feedback should be provided.
+ */
+var dot_trial = {
+  data: function(){
+    return {trialnum: trialnum, blocknum: blocknum}
+  },
+  timeline: [
+
+    // 1. Check Fullscreen
+    {
+      timeline: [
+
+        {type: jsPsychFullscreen,
+          message: '<p>You need to be in fullscreen mode to continue the experiment! <br></br> Please click the button below to enter fullscreen mode.<br></br><p>',
+          fullscreen_mode: true,
+          on_finish: function(){
+            in_fullscreen = true;
+          }
+        }
+      ],
+      conditional_function: function(){
+        if(in_fullscreen === true){
+          return false;
+        } else {
+          return true;
+        }
+      }
+    },
+
+    // 2. Fixation cross trial
+    {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<p style="font-size: 70pt;">+</p>',
+      choices: "NO_KEYS",
+      trial_duration: 1000
+    },
+
+    // 3. Stimulus presentation (brief)
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      canvas_size: [canvasHeight, canvasWidth],
+      /**
+       * Draws stimuli on a canvas with two boxes having different dot counts.
+       * It calculates the baseline dot count, determines an increment based on a staircase procedure,
+       * randomly assigns the higher dot count to either the left or right box, and determines the correct response key.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element on which the stimuli will be drawn.
+       * @returns {undefined} Calls drawStimuli to display the boxes and dots.
+       */
+      stimulus: function(c) {
+        // Set up the dot counts.
+        const baseline = 313;  // half-filled box (313 dots)
+        // Choose a random increment between 1 and 70 scaled by an exponential function of the staircase log value.
+        const increment = Math.round(Math.exp(staircase.current_log));
+        const highCount = baseline + increment;
+
+
+
+        // Randomly assign the higher dot count to the left or right box based on timeline (to ensure balance).
+        let leftDots, rightDots;
+        if(jsPsych.evaluateTimelineVariable('target_left')){
+          leftDots = highCount;
+          rightDots = baseline;
+        } else {
+          leftDots = baseline;
+          rightDots = highCount;
+        }
+
+
+        // Determine the correct response key based on which box has more dots.
+        let correct_key, target_left;
+        if (leftDots > rightDots) {
+          correct_key = 'w';
+          target_left = true;
+        } else {
+          correct_key = 'e';
+          target_left = false;
+        }
+
+        // Save these values in a temporary global object for later use in subsequent trials.
+        window.current_trial_dots = {
+          leftDots: leftDots,
+          rightDots: rightDots,
+          baseline: baseline,
+          increment: increment,
+          correct_key: correct_key,
+          target_left: target_left
+        };
+
+        // Draw the stimuli (both boxes with dots).
+        return drawStimuli(c, true, "black", "black", leftDots, rightDots);
+      },
+      trial_duration: 300,
+      choices: "NO_KEYS",
+      on_finish: function(data) {
+        data.trial_type = "Stimulus Presentation";
+
+        // Retrieve the dot configuration values saved during stimulus drawing and add them to the trial data.
+        data.leftDots   = window.current_trial_dots.leftDots;
+        data.rightDots  = window.current_trial_dots.rightDots;
+        data.baseline   = window.current_trial_dots.baseline;
+        data.increment  = window.current_trial_dots.increment;
+        data.correct_key = window.current_trial_dots.correct_key;
+        data.target_left = window.current_trial_dots.target_left;
+        data.current_log = staircase.current_log;
+      }
+    },
+
+    // 4. Stimulus Response trial: Participant responds which side had more dots.
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      canvas_size: [canvasHeight, canvasWidth],
+      /**
+       * Draws the two boxes without dots for the response phase.
+       * The participant's task is to respond by pressing either 'w' or 'e'.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element on which the boxes are drawn.
+       * @returns {undefined} Calls drawStimuli to render the boxes.
+       */
+      stimulus: function(c) {
+        return drawStimuli(c, false, "black", "black");
+      },
+      choices: ['w', 'e'],
+      prompt: function(){
+        var startX = (canvasWidth - 380) / 2;
+        if(phase == "Practice") {return `<p style = "position: absolute; margin-left: ${startX}px; margin-top: 0%;" >Press W if the box on the left had more dots.<br>Press E if the box on the right had more dots.</p>`} else {return ''}
+      },
+      on_finish: function(data) {
+        data.trial_type = "Stimulus Response";
+        
+        // Save response as lower case even if it was in uppercase
+        data.response = data.response.toLowerCase();
+
+        // Score the response accuracy by comparing the key pressed to the correct key.
+        if (data.response == window.current_trial_dots.correct_key) {
+          data.correct = 1;
+        } else {
+          data.correct = 0;
+        }
+
+        // Clean up the temporary storage.
+        delete window.current_trial_dots;
+      }
+    },
+
+    // 5. Response highlight trial (Feedback display)
+    {
+      type: jsPsychCanvasKeyboardResponse,
+      canvas_size: [canvasHeight, canvasWidth],
+      trial_duration: 500,
+      /**
+       * Provides visual feedback by drawing a blue outline (if no feedback is to be given)
+       * or green/red outlines based on the response correctness.
+       *
+       * @param {HTMLCanvasElement} c - The canvas element for drawing the feedback.
+       * @returns {undefined} Calls drawStimuli to show boxes with highlighted sides.
+       */
+      stimulus: function(c) {
+        // Retrieve the last response data.
+        const lastResponse = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0].response;
+        const lastCorrect = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0].correct;
+        let feedbackColor;
+
+        // Determine the feedback color based on whether feedback is provided and whether the response was correct.
+        if (provide_feedback === false) {
+          feedbackColor = "blue"; // Color if no feedback provided
+        } else if (provide_feedback === true && lastCorrect === 1) {
+          feedbackColor = "green"; // Color for correct response when feedback is provided
+        } else if (provide_feedback === true && lastCorrect === 0) {
+          feedbackColor = "red";   // Color for incorrect response when feedback is provided
+        }
+
+        // Highlight the box based on the response key.
+        if (lastResponse === "e") {
+          return drawStimuli(c, false, "black", feedbackColor);
+        } else if(lastResponse === "w") {
+          return drawStimuli(c, false, feedbackColor, "black");
+        }
+      },
+      choices: "NO_KEYS",
+      on_finish: function(data) {
+        data.trial_type = "Feedback";
+      }
+    },
+
+    // 6. Confidence Rating trial (conditional)
+    {
+      timeline: [
+        {
+          type: jsPsychHtmlSliderResponse,
+          stimulus: `<h3>Rate your confidence:</h3>
+            <div id="conf1" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:15px;"></div>
+            <div id="conf2" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:169px;"></div>
+            <div id="conf3" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:323px;"></div>
+            <div id="conf4" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:477px;"></div>
+          <div id="conf5" class="conf" style="height:25px; width:154px; margin-top:2px; margin-left:631px;"></div>`,
+          min: 1,
+          max: 6,
+          step: 1,
+          slider_width: 800,
+          require_movement: true,
+          labels: ['Guessing', '', '', '', '', 'Certain'],
+          button_label: "Submit",
+          on_finish: function(data) {
+            data.trial_type = "Confidence Rating";
+          },
+          css_classes: ["conf_rating"],
+          on_load: function() {
+
+            const wrapper = document.querySelector('.conf_rating');
+
+              // Reset thumb to hidden at the start of the trial
+            wrapper.style.setProperty('--thumb-visibility', 'hidden');
+
+
+            // Center the slider by calculating the left margin.
+            const w = window.innerWidth;
+            const marLeft = (w - 800) / 2 + "px";
+            document.getElementById("conf1").style.left = marLeft;
+            document.getElementById("conf2").style.left = marLeft;
+            document.getElementById("conf3").style.left = marLeft;
+            document.getElementById("conf4").style.left = marLeft;
+            document.getElementById("conf5").style.left = marLeft;
+
+             // Now reveal the thumb when the slider is used
+            wrapper.addEventListener('pointerdown', function handleFirstClick() {
+              wrapper.style.setProperty('--thumb-visibility', 'visible');
+              wrapper.removeEventListener('pointerdown', handleFirstClick);
+            });
+
+
+          }
+        }
+      ],
+      /**
+       * This conditional function ensures that the confidence rating
+       * trial is only provided during the Test phase.
+       *
+       * @returns {boolean} Returns true when the phase is "Test", otherwise false.
+       */
+      conditional_function: function() {
+        return phase === "Test";
+      }
+    },
+
+    // 7. Summary trial: Stores data and updates the staircase.
+    {
+      type: jsPsychCallFunction,
+      /**
+       * Updates the staircase following a two-down one-up rule based on response accuracy
+       * and logs relevant trial data. The step size decreases with increasing trial numbers.
+       */
+      func: function() {
+        // Retrieve the last stimulus response trial 
+        const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+        const correct = lastResp.correct;
+
+        // Determine the current step-size (in log-space) based on trial number.
+        let step_size;
+        if (trialnum <= 5) {
+          step_size = 0.4;
+        } else if (trialnum <= 10) {
+          step_size = 0.2;
+        } else {
+          step_size = 0.1;
+        }
+
+        // Update the staircase using the two-down one-up rule.
+        if (correct) {
+          staircase.consecutive_correct += 1;
+          if (staircase.consecutive_correct >= 2) {
+            // Two correct responses in a row: make the task harder by reducing the dot difference.
+            staircase.current_log -= step_size;
+            staircase.consecutive_correct = 0; // Reset counter.
+          }
+        } else {
+          // Incorrect response: make the task easier.
+          staircase.current_log += step_size;
+          if(staircase.current_log > 5.74){staircase.current_log = 5.74}
+            staircase.consecutive_correct = 0;
+        }
+
+
+      },
+      on_finish: function(data) {
+        // Log the reaction time and associate the stimulus response data with the summary trial.
+        const lastResp = jsPsych.data.get().filter({trial_type: "Stimulus Response"}).last(1).values()[0];
+        data.rt         = lastResp.rt;
+        data.phase      = phase;          // Phase (Practice or Test)
+        data.response   = lastResp.response;
+        data.correct    = lastResp.correct;
+        // Retrieve the last presentation trial data to log dot counts and differences.
+        const lastPres = jsPsych.data.get().filter({trial_type: "Stimulus Presentation"}).last(1).values()[0];
+        data.target_left     = lastPres.target_left;
+        data.leftDots        = lastPres.leftDots;
+        data.rightDots       = lastPres.rightDots;
+        data.dot_difference  = lastPres.increment;
+        data.current_log     = lastPres.current_log;
+
+        // Retrieve confidence response if in Test phase.
+        if (phase === "Test") {
+          const lastConf = jsPsych.data.get().filter({trial_type: "Confidence Rating"}).last(1).values()[0];
+          data.confidence = lastConf.response;
+        }
+        data.trial_type = "Summary Trial";
+        trialnum++;  // Increment the trial number.
+      }
+    }
+  ],
+  timeline_variables: [
+    {target_left: true},
+    {target_left: false},
+  ],
+  randomize_order: true
+};
+
+
+
+
+
+
+
+/* 
+  ===============================================================
+  =           BLOCKS (PRACTICE & TEST) DEFINITION               =
+  ===============================================================
+*/
+
+// Define a single practice block trial (with feedback)
+const practice_block_trial = {
+  timeline: [dot_trial],
+  repetitions: no_practice_trials/2, 
+  on_timeline_start: function() {
+    provide_feedback = true;
+    phase = "Practice";
+  }
+};
+
+// Define a single test block (no feedback, confidence rating)
+const test_block_trial = {
+  timeline: [dot_trial],
+  repetitions: no_trials/2 , 
+  on_timeline_start: function() {
+    provide_feedback = false;
+    phase = "Test";
+  }
+};
+
+
+// Define Practice Block
+const practice_block = {
+  timeline: [practice_block_trial, practice_end]
+};
+
+// Define aTest Block
+const test_blocks = {
+  timeline: [new_block, test_block_trial],
+  repetitions: total_blocks 
+};
+
+
+
